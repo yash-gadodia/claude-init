@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Block any command that contains 'rm -rf /', 'rm -rf ~', 'rm -rf .', 'git push --force', 'git push -f', 'sudo rm', or 'DROP TABLE'. Also block reading from ~/.ssh/, ~/.aws/, ~/.gnupg/, or any .env file. Return {\"ok\": false, \"reason\": \"Blocked: destructive or sensitive operation\"} if matched, otherwise {\"ok\": true}.",
+            "statusMessage": "Safety check..."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(sudo rm *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)"
+    ]
+  }
+}
