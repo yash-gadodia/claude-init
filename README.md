@@ -18,7 +18,9 @@ Point `claude-init` at any existing codebase, run `/claude-init`, and get a comp
 
 Every time you open Claude Code on an existing repo, you start from zero. Claude doesn't know your architecture, conventions, test commands, or deployment flow. You burn context re-explaining the same things every session.
 
-`claude-init` fixes the cold start. One command generates everything Claude needs to work effectively on your codebase from the first message.
+`claude-init` fixes the cold start. One command analyzes your codebase, bootstraps a test suite if none exists, and generates everything Claude needs to work effectively from the first message.
+
+**No tests? No problem.** If your repo has no test framework, `claude-init` picks the right one for your stack, installs it, and writes a baseline test suite covering your existing code. Tests are the trust layer — without them, AI coding is just vibes.
 
 ## Quick Start
 

@@ -55,6 +55,75 @@ Detect and document:
 - **Contributing guide**: Extract coding standards
 - **Git history**: Check recent commit message style (conventional commits? Jira refs?)
 
+## Step 1.5: Bootstrap Test Suite (if none exists)
+
+This is critical. Without tests, Claude can't verify its own work. The entire "AI-native" setup collapses — no QA agent, no `/test` skill, no `/refactor` safety net, no `/review` verification. Tests are the trust layer.
+
+### If NO test framework is detected:
+
+**1. Pick the right framework for the stack:**
+
+| Stack | Test Framework | Why |
+|-------|---------------|-----|
+| TypeScript/JavaScript (Vite, Next.js, SvelteKit) | Vitest | Fast, native ESM, Vite-compatible |
+| TypeScript/JavaScript (legacy, webpack) | Jest | Widest ecosystem support |
+| Python | pytest | Industry standard, simple, powerful |
+| Rust | cargo test (built-in) | No setup needed |
+| Go | go test (built-in) | No setup needed |
+| Ruby/Rails | RSpec | Community standard |
+| PHP/Laravel | PHPUnit / Pest | Framework-native |
+| Elixir/Phoenix | ExUnit (built-in) | No setup needed |
+| Java/Spring | JUnit 5 | Framework standard |
+| Dart/Flutter | flutter test (built-in) | No setup needed |
+
+**2. Install the test framework:**
+- Run the actual install command (e.g., `npm install -D vitest`, `pip install pytest`)
+- Add test scripts to package.json / Makefile / pyproject.toml as appropriate
+- Create the config file if needed (vitest.config.ts, pytest.ini, jest.config.js)
+
+**3. Write a baseline test suite:**
+
+Use subagents in parallel to write tests for different layers:
+
+**Subagent A — Unit tests:**
+- Find pure functions, utilities, helpers, validators
+- Write tests for each with happy path + edge cases
+- Target: every file in `utils/`, `lib/`, `helpers/`, or equivalent
+
+**Subagent B — Integration tests (if API exists):**
+- Find route handlers / controllers / resolvers
+- Write request-response tests for each endpoint
+- Cover: success, auth failure, validation error, not found
+- Use the framework's built-in test client (supertest, httpx, etc.)
+
+**Subagent C — Component tests (if frontend exists):**
+- Find key UI components (not every component — focus on ones with logic)
+- Write render + interaction tests
+- Use the framework's testing library (Testing Library, Vue Test Utils, etc.)
+
+**4. Run the suite and fix failures:**
+- Execute the full test suite
+- Fix any failures (the tests should pass against the current code)
+- Ensure CI-friendly (no browser needed for unit/integration tests)
+
+**5. Add test commands to package.json / Makefile:**
+- `test` — run full suite
+- `test:watch` — watch mode for development
+- `test:coverage` — with coverage reporting (if framework supports it)
+
+### If tests ALREADY exist:
+- Read existing tests to learn patterns (assertion style, fixtures, mocking approach)
+- Identify coverage gaps (files/routes with no tests)
+- Note gaps in the report but DON'T write additional tests — the user didn't ask for that
+- Configure the QA agent and `/test` skill to match existing patterns exactly
+
+### Test quality bar:
+- Every test has a descriptive name (`should reject expired tokens`, not `test 1`)
+- Tests are independent (no shared mutable state)
+- Tests are deterministic (no timing dependencies, no random data without seeding)
+- Tests verify behavior, not implementation details
+- Mocks only at system boundaries (external APIs, email, etc.)
+
 ## Step 2: Generate Configuration
 
 Based on the analysis, generate these files in the target repo. Use the templates from `${CLAUDE_SKILL_DIR}/../../../templates/` as starting points, but CUSTOMIZE everything to the specific codebase.
@@ -91,27 +160,22 @@ Each agent must:
 - Include "Read and follow all rules in `.claude/rules/`" in their instructions
 
 ### 2c. Rules (`.claude/rules/`)
-Generate topic-specific rules:
+
+**Only generate rules with project-specific content.** Generic advice like "validate user input" or "write clean code" is stuff Claude already knows. Every rule must capture something Claude CAN'T infer from reading the code — deployment gotchas, team conventions, architectural decisions, domain-specific constraints.
 
 Always generate:
-1. **code-style.md** — Based on detected linter config, import style, naming conventions
-2. **security.md** — Stack-specific security rules (SQL injection for DB projects, XSS for web, etc.)
-3. **testing.md** — Based on detected test framework and patterns
-4. **git.md** — Based on detected commit style and branching conventions
+1. **git.md** — Based on ACTUAL commit style from git log (conventional commits? Jira refs? squash policy?)
+2. **testing.md** — Based on the ACTUAL test framework, patterns, and conventions (from Step 1.5)
 
-Conditionally generate based on detected stack:
-5. **api.md** — Only if API routes/endpoints detected. Scope with `paths:` to API directories.
-6. **database.md** — Only if ORM/migrations detected. Scope to schema/migration directories.
-7. **frontend.md** — Only if frontend components detected. Scope to component directories.
-8. **performance.md** — Include for web apps and APIs, skip for CLIs and libraries.
+Conditionally generate (only if project-specific content found):
+3. **code-style.md** — Only if there are non-obvious conventions (unusual import ordering, specific naming patterns, etc.). Skip if the project just uses a standard linter config.
+4. **api.md** — Only if API routes detected. Must reference actual response shapes, error patterns, auth middleware found in the code. Scope with `paths:`.
+5. **database.md** — Only if ORM/migrations detected. Must reference actual migration patterns, schema conventions. Scope with `paths:`.
+6. **frontend.md** — Only if frontend components detected. Must reference actual component patterns, state management conventions. Scope with `paths:`.
+7. **security.md** — Only if the project has specific security patterns (auth middleware, input sanitization, CSP headers). Don't generate generic OWASP advice.
+8. **performance.md** — Only if specific performance patterns found (caching, connection pooling, lazy loading).
 
-Use `paths:` frontmatter to scope rules to relevant directories:
-```yaml
----
-paths:
-  - "src/api/**"
----
-```
+**The test**: for each rule file, ask "would removing this cause Claude to make a mistake on THIS project?" If no, don't generate it.
 
 ### 2d. Skills (`.claude/skills/`)
 Generate these skills:
@@ -126,10 +190,18 @@ Generate these skills:
 8. **refactor/SKILL.md** — Structured refactoring with tests green before and after.
 
 ### 2e. Hooks (`.claude/settings.json`)
-Generate deterministic command-based safety hooks (NOT prompt-based — they're slow and unreliable):
-- **PreToolUse (Bash)**: Block `rm -rf`, `git push --force`, `git reset --hard`, `git clean -fd`, `curl | sh`, `npm publish`, `docker push`, `terraform destroy`, `kubectl delete namespace`
-- **PreToolUse (Write)**: Block writing to `.env`, `.pem`, `.key`, `.cert`, credential files
-- **Permissions deny list**: Block reading `~/.ssh/`, `~/.aws/`, `~/.gnupg/`, `.env` files
+
+Keep hooks minimal. Overly aggressive hooks create friction that makes people disable them entirely.
+
+**Always include:**
+- **PreToolUse (Write)**: Block writing to `.env`, `.pem`, `.key`, `.cert`, credential files — this catches real mistakes with near-zero false positives
+
+**For team projects (>1 contributor detected via git log):**
+- **PreToolUse (Bash)**: Block `git push --force`, `npm publish`, `docker push`, `terraform destroy`
+- **Permissions deny list**: Block reading `~/.ssh/`, `~/.aws/`, `~/.gnupg/`
+
+**Skip for solo dev projects:**
+- Don't add Bash hooks for `rm -rf`, `git reset --hard`, etc. — these cause false positives on legitimate commands like `rm -rf ./dist` and a solo dev knows what they're doing
 
 ### 2f. Monorepo Support
 If a monorepo is detected:
