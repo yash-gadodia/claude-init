@@ -1,4 +1,4 @@
-# app-starter-app
+# claude-init
 
 Make any repo AI-native. Drop this into an existing codebase and run `/setup` to generate a complete Claude Code configuration — tailored to your stack, framework, and patterns.
 
@@ -22,14 +22,14 @@ This repo is a **cold-start solver**. Point it at any codebase and it:
 
 ```bash
 # Option 1: Install as a global skill
-cp -r ~/app-starter-app/.claude/skills/setup ~/.claude/skills/
+cp -r ~/claude-init/.claude/skills/setup ~/.claude/skills/
 cd /path/to/your-repo
 claude
 # Type: /setup
 
 # Option 2: Run directly
 cd /path/to/your-repo
-claude --skill-path ~/app-starter-app/.claude/skills/setup
+claude --skill-path ~/claude-init/.claude/skills/setup
 # Type: /setup
 
 # Option 3: Onboard to a repo you've already set up

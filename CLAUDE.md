@@ -1,4 +1,4 @@
-# app-starter-app
+# claude-init
 
 Makes any repo AI-native by generating a complete `.claude/` configuration tailored to the codebase.
 
@@ -16,16 +16,16 @@ Point this at any existing (or new) repo and run `/setup` to:
 
 ```bash
 # Clone this repo
-git clone git@github.com:yash-gadodia/app-starter-app.git
+git clone git@github.com:yash-gadodia/claude-init.git
 
 # Open the TARGET repo in Claude Code
 cd /path/to/your-existing-repo
 
 # Run setup pointing to this starter pack
-claude --skill-path ~/app-starter-app/.claude/skills/setup
+claude --skill-path ~/claude-init/.claude/skills/setup
 
 # Or copy the skills into the target repo first
-cp -r ~/app-starter-app/.claude/skills/setup /path/to/repo/.claude/skills/
+cp -r ~/claude-init/.claude/skills/setup /path/to/repo/.claude/skills/
 cd /path/to/repo && claude
 # Then type: /setup
 ```
