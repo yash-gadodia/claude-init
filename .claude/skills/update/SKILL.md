@@ -12,8 +12,9 @@ Re-analyze the codebase and update the existing `.claude/` configuration to matc
 
 ### Step 1: Snapshot Current Config
 
-Read and fingerprint every existing `.claude/` file:
+Read and fingerprint every existing config file:
 - `CLAUDE.md` — extract sections, note any `<!-- custom -->` or `<!-- generated -->` markers
+- `ARCHITECTURE.md` — check if it exists and is still accurate
 - `agents/` — list all agents and their model/tool config
 - `skills/` — list all skills
 - `rules/` — list all rules and their `paths:` scopes
@@ -36,16 +37,19 @@ Compare the re-analysis against the current config. Identify:
 - New test framework → update QA agent and test skill
 - New directories → add path-scoped rules
 - New CI workflow → update commands section
+- Missing ARCHITECTURE.md → generate one (follow Step 1.75 from /claude-init)
 
 **Stale things to update:**
 - Commands that no longer exist (e.g., `npm test` changed to `vitest`)
 - Agent references to removed patterns
 - Rules scoped to paths that no longer exist
+- ARCHITECTURE.md sections that no longer match the codebase (new modules, changed data flow, removed dependencies)
 
 **Things to preserve (never touch):**
 - Any content between `<!-- custom -->` markers
 - Hand-written sections not matching generated patterns
 - Custom agents, skills, or rules the user added manually
+- **Project-specific values in rules** — if a rule mentions specific thresholds, library settings, or configuration values (e.g., "staleTime is 5 minutes", "avoid importing entire libraries"), keep them. These are real project details that Claude can't infer. You may restructure or add, but never drop specific values.
 
 ### Step 4: Present Changes
 

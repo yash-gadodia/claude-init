@@ -123,6 +123,12 @@ Use subagents in parallel to write tests for different layers:
 - Tests are deterministic (no timing dependencies, no random data without seeding)
 - Tests verify behavior, not implementation details
 - Mocks only at system boundaries (external APIs, email, etc.)
+- **Assert exact expected values, not just ranges.** A test like `expect(result).toBeGreaterThan(0)` for a calculation function is a smoke test, not a unit test — it passes even if the logic is completely wrong. For known inputs, assert the exact expected output. Use `toBeCloseTo` for floating point, but always with a specific expected value.
+- **Pick one import style and be consistent.** If the config enables `globals: true` (Vitest) or uses `@jest/globals`, don't also import `describe`/`it`/`expect` in every test file. If you prefer explicit imports, don't enable globals. Inconsistency confuses contributors.
+
+### Subagent requirements:
+- **Subagent B is NOT optional.** If the project has API routes, you MUST write integration tests for them using the framework's test client (Hono `app.request()`, supertest, httpx, etc.). Skipping API tests and only testing utilities leaves the most critical layer untested.
+- Each subagent must produce tests that would actually catch a real bug if the code regressed — not just verify "it runs without crashing."
 
 ## Step 1.75: Generate ARCHITECTURE.md (if none exists)
 
@@ -210,6 +216,7 @@ Each agent must:
 - Reference ACTUAL project patterns, not generic advice
 - Include `memory: project` for architect and developer agents
 - Include "Read and follow all rules in `.claude/rules/`" in their instructions
+- **Use the exact version numbers detected** — if Vitest 3.2.4 is installed, the QA agent must say "Vitest 3.x", not "Vitest 2.x". Cross-check versions against package.json/lockfile.
 
 ### 2c. Rules (`.claude/rules/`)
 
@@ -228,6 +235,8 @@ Conditionally generate (only if project-specific content found):
 8. **performance.md** — Only if specific performance patterns found (caching, connection pooling, lazy loading).
 
 **The test**: for each rule file, ask "would removing this cause Claude to make a mistake on THIS project?" If no, don't generate it.
+
+**When updating existing rules (via `/update`):** Never remove project-specific information that was already there. If the existing rule says "React Query staleTime is 5 minutes", keep it — that's a real project detail Claude can't infer. You may restructure, clarify, or add to existing rules, but don't drop specific values, thresholds, or patterns.
 
 ### 2d. Skills (`.claude/skills/`)
 
@@ -277,9 +286,10 @@ Ensure `.claude/settings.local.json` and `.claude/agent-memory-local/` are gitig
 
 After generation:
 1. Count files generated
-2. Show the CLAUDE.md to the user for review
+2. Show the CLAUDE.md and ARCHITECTURE.md to the user for review
 3. List all agents, skills, rules, and hooks created
-4. Suggest next steps (e.g., "Run `/onboard` to get oriented", "Customize CLAUDE.md further")
+4. Report test suite status (framework installed, number of tests, all passing?)
+5. Suggest next steps (e.g., "Run `/onboard` to get oriented", "Customize CLAUDE.md further")
 
 ## Rules
 

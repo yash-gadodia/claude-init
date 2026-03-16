@@ -27,9 +27,10 @@ Otherwise, test all uncommitted changes: `git diff --name-only HEAD`
 Follow the existing patterns EXACTLY. Generate:
 
 **Unit tests** for pure functions and business logic:
-- Happy path with typical inputs
+- Happy path with typical inputs — assert exact expected output, not just ranges
 - Edge cases (empty, null, zero, negative, boundary)
 - Error cases (invalid input, expected failures)
+- For calculations: compute the expected value by hand and assert it. `expect(result).toBeGreaterThan(0)` is not a test.
 
 **Integration tests** for API routes and DB operations:
 - Request → response with expected status and body
@@ -56,3 +57,4 @@ Execute the test suite and verify:
 - Test behavior, not implementation — tests should survive refactoring
 - Don't mock internal modules — only mock at system boundaries
 - Every test must have a descriptive name: `should reject expired tokens` not `test case 3`
+- Every assertion must be specific enough to catch a regression. Ask: "would this test still pass if the function returned a wrong but plausible value?" If yes, tighten the assertion.
