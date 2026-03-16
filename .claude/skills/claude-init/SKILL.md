@@ -178,16 +178,24 @@ Conditionally generate (only if project-specific content found):
 **The test**: for each rule file, ask "would removing this cause Claude to make a mistake on THIS project?" If no, don't generate it.
 
 ### 2d. Skills (`.claude/skills/`)
-Generate these skills:
 
-1. **plan/SKILL.md** — Planning skill that uses the devil's advocate pattern. Outputs specs to `specs/` directory.
-2. **review/SKILL.md** — Code review skill that checks against project conventions.
-3. **test/SKILL.md** — Test generation skill that uses the project's actual test framework and patterns.
-4. **devils-advocate/SKILL.md** — Challenges architectural decisions. Asks "what if this fails?"
-5. **clarify/SKILL.md** — Product clarifier that turns messy requests into structured specs.
-6. **fix/SKILL.md** — Debug a specific error or failing test. Reproduce → locate → fix → regression test.
-7. **debug/SKILL.md** — Open-ended investigation when the cause is unknown. Hypothesize → isolate → root cause.
-8. **refactor/SKILL.md** — Structured refactoring with tests green before and after.
+Only generate skills that add value beyond what Claude already does. A skill must change Claude's behavior, not just describe a process Claude would follow anyway.
+
+**Always generate (these genuinely change behavior):**
+1. **plan/SKILL.md** — Planning skill with built-in devil's advocate challenge. Forces structured thinking before implementation.
+2. **review/SKILL.md** — Code review against THIS project's conventions (not generic). Must reference actual linter config, patterns, and anti-patterns.
+3. **test/SKILL.md** — Test generation using the project's actual test framework, patterns, and conventions from Step 1.5.
+4. **clarify/SKILL.md** — Product clarifier that turns messy requests into structured, testable specs.
+
+**Conditionally generate (only if the project benefits from structured process):**
+5. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
+
+**Do NOT generate by default (Claude already does these well without a skill):**
+- `/fix` — Claude's default debugging is already "reproduce → locate → fix"
+- `/debug` — Same as above, Claude naturally investigates systematically
+- `/refactor` — Claude already runs tests before/after when asked to refactor
+
+These can be added later via `/update` if the user wants the structured process.
 
 ### 2e. Hooks (`.claude/settings.json`)
 

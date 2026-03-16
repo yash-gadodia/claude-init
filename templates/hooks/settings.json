@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi 'rm\\s+-rf\\s+[/~.]|git\\s+push\\s+(-f|--force)|sudo\\s+rm|DROP\\s+TABLE|git\\s+reset\\s+--hard|git\\s+checkout\\s+--\\s+\\.|git\\s+clean\\s+-fd|curl.*\\|\\s*(ba)?sh|npm\\s+publish|docker\\s+push|terraform\\s+apply|terraform\\s+destroy|kubectl\\s+delete\\s+(namespace|ns)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: destructive or sensitive operation. Ask user for explicit approval.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
+            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi 'git\\s+push\\s+(-f|--force)|npm\\s+publish|docker\\s+push|terraform\\s+destroy|kubectl\\s+delete\\s+(namespace|ns)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: destructive or sensitive operation. Ask user for explicit approval.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
             "timeout": 5000,
             "statusMessage": "Safety check..."
           }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi '\\.(env|pem|key|cert|p12|pfx)$|/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing to credential or secret file.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
+            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi '\\.env(\\.[a-z]+)?\"|\\.pem\"|\\.key\"|\\.cert\"|\\.p12\"|\\.pfx\"|/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing to credential or secret file.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
             "timeout": 5000,
             "statusMessage": "Checking write target..."
           }
@@ -27,24 +27,14 @@
   },
   "permissions": {
     "deny": [
-      "Bash(rm -rf /)",
-      "Bash(rm -rf ~*)",
-      "Bash(rm -rf .)",
-      "Bash(sudo rm *)",
       "Bash(git push --force*)",
       "Bash(git push -f *)",
-      "Bash(git reset --hard*)",
-      "Bash(git checkout -- .)",
-      "Bash(git clean -fd*)",
       "Bash(npm publish*)",
       "Bash(docker push*)",
       "Bash(terraform destroy*)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
-      "Read(~/.gnupg/**)",
-      "Read(**/.env)",
-      "Read(**/.env.local)",
-      "Read(**/.env.production)"
+      "Read(~/.gnupg/**)"
     ]
   }
 }
