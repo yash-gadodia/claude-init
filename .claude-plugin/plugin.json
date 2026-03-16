@@ -1,0 +1,14 @@
+{
+  "name": "claude-init",
+  "version": "0.1.0",
+  "description": "Make any repo AI-native. Analyzes your codebase and generates a complete Claude Code configuration — agents, skills, rules, and hooks tailored to your stack.",
+  "author": "Yash Gadodia",
+  "license": "MIT",
+  "repository": "https://github.com/yash-gadodia/claude-init",
+  "skills": [
+    "skills/setup",
+    "skills/onboard",
+    "skills/update",
+    "skills/doctor"
+  ]
+}

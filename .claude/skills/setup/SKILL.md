@@ -24,17 +24,23 @@ Run these analyses IN PARALLEL using subagents:
 
 ### 1a. Stack Detection
 Detect and document:
-- **Language(s)**: Check file extensions, package files (package.json, Cargo.toml, go.mod, requirements.txt, Gemfile, pyproject.toml, pom.xml, build.gradle, mix.exs, etc.)
-- **Framework**: Next.js, Rails, Django, FastAPI, Express, Spring, Phoenix, SvelteKit, Nuxt, Laravel, etc.
-- **Package manager**: npm/yarn/pnpm/bun, pip/uv/poetry, cargo, go modules, bundler, mix, etc.
-- **Monorepo?**: Check for workspace configs (turbo.json, nx.json, lerna.json, pnpm-workspace.yaml)
+- **Language(s)**: Check file extensions, package files (package.json, Cargo.toml, go.mod, requirements.txt, Gemfile, pyproject.toml, pom.xml, build.gradle, mix.exs, pubspec.yaml, Package.swift, etc.)
+- **Framework**: Next.js, Rails, Django, FastAPI, Express, Spring, Phoenix, SvelteKit, Nuxt, Laravel, Flutter, React Native, etc.
+- **Package manager**: npm/yarn/pnpm/bun, pip/uv/poetry, cargo, go modules, bundler, mix, pub, etc.
+- **Build system**: Make, CMake, Bazel, Meson, Gradle, Maven, Turbopack, Vite, webpack, esbuild
+- **Platform**: Web, iOS (.xcodeproj, Package.swift), Android (build.gradle.kts + android), mobile (React Native, Flutter), CLI, library
+- **Monorepo?**: Check for workspace configs (turbo.json, nx.json, lerna.json, pnpm-workspace.yaml) OR multi-language directory splits (backend/ + frontend/, packages/, apps/)
+- **Infrastructure**: Terraform (.tf), Pulumi, CDK, Helm charts, Docker/docker-compose, Kubernetes manifests
+- **Environment**: .env.example, docker-compose.yml, Dockerfile, nix flake, direnv (.envrc)
 
 ### 1b. Architecture Detection
 - **Directory structure**: src/, app/, lib/, api/, components/, services/, etc.
 - **Database**: Prisma, Drizzle, TypeORM, SQLAlchemy, ActiveRecord, Ecto, diesel, etc. Read schema files.
 - **Auth**: NextAuth, Clerk, Supabase Auth, Passport, Devise, Guardian, etc.
-- **API style**: REST, GraphQL, tRPC, gRPC
+- **API style**: REST, GraphQL, tRPC, gRPC. Check for OpenAPI/Swagger specs or .graphql schema files.
 - **State management**: Redux, Zustand, Jotai, Pinia, etc.
+- **Containerization**: Dockerfile, docker-compose.yml — how is the app run locally?
+- **API specs**: OpenAPI/Swagger files, Postman collections, .graphql schemas
 
 ### 1c. Testing & CI Detection
 - **Test framework**: Jest, Vitest, pytest, RSpec, ExUnit, go test, cargo test, PHPUnit, Playwright, Cypress
@@ -70,20 +76,34 @@ Keep it under 80 lines. Every line must earn its place.
 Generate these agent personas, tuned to the detected stack:
 
 1. **architect.md** — System design, uses detected DB/API/auth patterns. Model: opus.
-2. **developer.md** — Implementation, knows the framework and conventions. Model: sonnet.
+2. **developer.md** — Implementation, knows the framework and conventions. Model: sonnet. Includes RALPH self-correction loop.
 3. **reviewer.md** — Code review, knows the test framework and linting rules. Model: sonnet.
 4. **qa.md** — Test writing and execution, uses the actual test runner commands. Model: sonnet.
 5. **researcher.md** — Codebase exploration, architecture docs generation. Model: haiku.
 
-Each agent must reference ACTUAL project patterns, not generic advice.
+Conditionally include based on detected stack:
+6. **devops.md** — Only if Docker, CI workflows, Terraform, or deployment configs detected. Model: sonnet.
+7. **writer.md** — Only if the project has docs/, README needs work, or API specs exist. Model: haiku.
+
+Each agent must:
+- Reference ACTUAL project patterns, not generic advice
+- Include `memory: project` for architect and developer agents
+- Include "Read and follow all rules in `.claude/rules/`" in their instructions
 
 ### 2c. Rules (`.claude/rules/`)
 Generate topic-specific rules:
 
+Always generate:
 1. **code-style.md** — Based on detected linter config, import style, naming conventions
 2. **security.md** — Stack-specific security rules (SQL injection for DB projects, XSS for web, etc.)
 3. **testing.md** — Based on detected test framework and patterns
 4. **git.md** — Based on detected commit style and branching conventions
+
+Conditionally generate based on detected stack:
+5. **api.md** — Only if API routes/endpoints detected. Scope with `paths:` to API directories.
+6. **database.md** — Only if ORM/migrations detected. Scope to schema/migration directories.
+7. **frontend.md** — Only if frontend components detected. Scope to component directories.
+8. **performance.md** — Include for web apps and APIs, skip for CLIs and libraries.
 
 Use `paths:` frontmatter to scope rules to relevant directories:
 ```yaml
@@ -101,14 +121,24 @@ Generate these skills:
 3. **test/SKILL.md** — Test generation skill that uses the project's actual test framework and patterns.
 4. **devils-advocate/SKILL.md** — Challenges architectural decisions. Asks "what if this fails?"
 5. **clarify/SKILL.md** — Product clarifier that turns messy requests into structured specs.
+6. **fix/SKILL.md** — Debug a specific error or failing test. Reproduce → locate → fix → regression test.
+7. **debug/SKILL.md** — Open-ended investigation when the cause is unknown. Hypothesize → isolate → root cause.
+8. **refactor/SKILL.md** — Structured refactoring with tests green before and after.
 
 ### 2e. Hooks (`.claude/settings.json`)
-Generate safety hooks:
-- **PreToolUse**: Block `rm -rf`, `git push --force`, credential file reads
-- **PreToolUse on git commit**: Remind to run tests first
-- **PostToolUse on Write/Edit**: Remind about linting
+Generate deterministic command-based safety hooks (NOT prompt-based — they're slow and unreliable):
+- **PreToolUse (Bash)**: Block `rm -rf`, `git push --force`, `git reset --hard`, `git clean -fd`, `curl | sh`, `npm publish`, `docker push`, `terraform destroy`, `kubectl delete namespace`
+- **PreToolUse (Write)**: Block writing to `.env`, `.pem`, `.key`, `.cert`, credential files
+- **Permissions deny list**: Block reading `~/.ssh/`, `~/.aws/`, `~/.gnupg/`, `.env` files
 
-### 2f. .gitignore additions
+### 2f. Monorepo Support
+If a monorepo is detected:
+- Generate a root `CLAUDE.md` with shared conventions
+- Generate per-package/app `CLAUDE.md` files with package-specific commands and architecture
+- Scope rules to specific packages via `paths:` frontmatter
+- Each package's CLAUDE.md should reference the root with `@../../CLAUDE.md`
+
+### 2g. .gitignore additions
 Ensure `.claude/settings.local.json` and `.claude/agent-memory-local/` are gitignored.
 
 ## Step 3: Verify & Report
