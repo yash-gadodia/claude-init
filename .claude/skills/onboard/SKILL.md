@@ -35,6 +35,18 @@ If `$ARGUMENTS` is provided, focus on that area (e.g., "auth", "payments", "API 
 - Identify state management
 - Find shared UI components
 
+### Phase 1.5: ARCHITECTURE.md Freshness Check
+
+If `ARCHITECTURE.md` exists:
+- Compare its Directory Structure section against the actual top-level directories
+- Check if modules/services mentioned still exist
+- Check if new top-level directories have appeared that aren't documented
+- If stale sections are found, flag them in the output and offer to update ARCHITECTURE.md
+
+If `ARCHITECTURE.md` does NOT exist:
+- Note this as a gap in the output
+- Suggest running `/claude-init` or `/update` to generate one
+
 ### Phase 2: Pattern Extraction
 
 From the codebase, identify:

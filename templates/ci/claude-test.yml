@@ -1,0 +1,74 @@
+# Claude Code CI — Run Tests
+# Runs the project's test suite on pull requests
+# Detects the package manager and test command automatically
+#
+# To install: copy this file to .github/workflows/claude-test.yml
+# Then customize the test command if needed
+
+name: Tests
+
+on:
+  pull_request:
+    branches: [main, master, dev]
+  push:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect package manager and setup
+        id: detect
+        run: |
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+            echo "install=pnpm install --frozen-lockfile" >> $GITHUB_OUTPUT
+            echo "test=pnpm test" >> $GITHUB_OUTPUT
+          elif [ -f "yarn.lock" ]; then
+            echo "manager=yarn" >> $GITHUB_OUTPUT
+            echo "install=yarn install --frozen-lockfile" >> $GITHUB_OUTPUT
+            echo "test=yarn test" >> $GITHUB_OUTPUT
+          elif [ -f "bun.lock" ] || [ -f "bun.lockb" ]; then
+            echo "manager=bun" >> $GITHUB_OUTPUT
+            echo "install=bun install --frozen-lockfile" >> $GITHUB_OUTPUT
+            echo "test=bun test" >> $GITHUB_OUTPUT
+          elif [ -f "package-lock.json" ]; then
+            echo "manager=npm" >> $GITHUB_OUTPUT
+            echo "install=npm ci" >> $GITHUB_OUTPUT
+            echo "test=npm test" >> $GITHUB_OUTPUT
+          elif [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+            echo "manager=pip" >> $GITHUB_OUTPUT
+            echo "install=pip install -e '.[test]' 2>/dev/null || pip install -r requirements.txt" >> $GITHUB_OUTPUT
+            echo "test=pytest" >> $GITHUB_OUTPUT
+          elif [ -f "Cargo.toml" ]; then
+            echo "manager=cargo" >> $GITHUB_OUTPUT
+            echo "install=echo 'no install needed'" >> $GITHUB_OUTPUT
+            echo "test=cargo test" >> $GITHUB_OUTPUT
+          elif [ -f "go.mod" ]; then
+            echo "manager=go" >> $GITHUB_OUTPUT
+            echo "install=go mod download" >> $GITHUB_OUTPUT
+            echo "test=go test ./..." >> $GITHUB_OUTPUT
+          else
+            echo "manager=unknown" >> $GITHUB_OUTPUT
+            echo "install=echo 'unknown package manager'" >> $GITHUB_OUTPUT
+            echo "test=echo 'no test command detected'" >> $GITHUB_OUTPUT
+          fi
+
+      # Node.js setup (if JS/TS project)
+      - name: Setup Node.js
+        if: contains(fromJSON('["npm","yarn","pnpm","bun"]'), steps.detect.outputs.manager)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        if: steps.detect.outputs.manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: ${{ steps.detect.outputs.install }}
+
+      - name: Run tests
+        run: ${{ steps.detect.outputs.test }}

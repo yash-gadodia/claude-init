@@ -164,6 +164,7 @@ Analyzes and tailors config for:
 | File | Description |
 |------|------------|
 | `templates/ci/claude-review.yml` | GitHub Actions workflow for automatic PR review with Claude |
+| `templates/ci/claude-test.yml` | GitHub Actions workflow to run tests on PRs (auto-detects package manager) |
 | `.claude-plugin/plugin.json` | Plugin manifest — installable via Claude Code's plugin system |
 | `scripts/install.sh` | One-command global installer |
 

@@ -123,8 +123,27 @@ Use subagents in parallel to write tests for different layers:
 - Tests are deterministic (no timing dependencies, no random data without seeding)
 - Tests verify behavior, not implementation details
 - Mocks only at system boundaries (external APIs, email, etc.)
-- **Assert exact expected values, not just ranges.** A test like `expect(result).toBeGreaterThan(0)` for a calculation function is a smoke test, not a unit test — it passes even if the logic is completely wrong. For known inputs, assert the exact expected output. Use `toBeCloseTo` for floating point, but always with a specific expected value.
+- **Assert exact expected values, not just ranges.** For known inputs, assert the exact expected output. Use `toBeCloseTo` for floating point, but always with a specific expected value.
 - **Pick one import style and be consistent.** If the config enables `globals: true` (Vitest) or uses `@jest/globals`, don't also import `describe`/`it`/`expect` in every test file. If you prefer explicit imports, don't enable globals. Inconsistency confuses contributors.
+
+**Examples — BAD vs GOOD assertions:**
+```typescript
+// BAD: passes even if calculation is completely wrong
+expect(result.total).toBeGreaterThan(0);
+expect(result.count).toBeTruthy();
+expect(formatted).toContain('1');
+
+// GOOD: catches regressions — exact expected values
+expect(result.total).toBe(42.5);
+expect(result.count).toBe(3);
+expect(formatted).toBe('1,234.50');
+
+// GOOD: floating point with specific expected value
+expect(calculateVolume(1, 1000, 1000, 1000, 'mm', 'M3')).toBeCloseTo(1.0, 5);
+
+// GOOD: locale-sensitive — pin the locale or match precisely
+expect(formatNumber(1234.5, 2, 'en-US')).toBe('1,234.50');
+```
 
 ### Subagent requirements:
 - **Subagent B is NOT optional.** If the project has API routes, you MUST write integration tests for them using the framework's test client (Hono `app.request()`, supertest, httpx, etc.). Skipping API tests and only testing utilities leaves the most critical layer untested.
@@ -182,7 +201,12 @@ This is the AI-facing documentation layer. CLAUDE.md is the quick reference (loa
 
 ## Step 2: Generate Configuration
 
-Based on the analysis, generate these files in the target repo. Use the templates from `${CLAUDE_SKILL_DIR}/../../../templates/` as starting points, but CUSTOMIZE everything to the specific codebase.
+Based on the analysis, generate these files in the target repo. Use the templates as starting points, but CUSTOMIZE everything to the specific codebase.
+
+**Template resolution:** Check these paths in order and use the first that exists:
+1. `${CLAUDE_SKILL_DIR}/../../../templates/` (running from cloned repo)
+2. `~/.claude/claude-init-templates/` (global install via install script)
+If neither exists, generate config from scratch using the analysis — templates are helpful but not required.
 
 ### 2a. CLAUDE.md
 Generate at the repo root. Must include:
@@ -275,7 +299,9 @@ Keep hooks minimal. Overly aggressive hooks create friction that makes people di
 ### 2f. Monorepo Support
 If a monorepo is detected:
 - Generate a root `CLAUDE.md` with shared conventions
+- Generate a root `ARCHITECTURE.md` with the system-level view (how packages/services connect, shared infrastructure, deployment topology)
 - Generate per-package/app `CLAUDE.md` files with package-specific commands and architecture
+- For complex packages (>20 source files or their own API surface), generate per-package `ARCHITECTURE.md` covering that package's internal architecture
 - Scope rules to specific packages via `paths:` frontmatter
 - Each package's CLAUDE.md should reference the root with `@../../CLAUDE.md`
 

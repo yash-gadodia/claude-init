@@ -27,6 +27,6 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          model: claude-sonnet-4-20250514
+          model: claude-sonnet-4-6-20250627
           # Uncomment to use a custom review prompt:
           # direct_prompt: "Review this PR for bugs, security issues, and convention violations. Be specific with file:line references."

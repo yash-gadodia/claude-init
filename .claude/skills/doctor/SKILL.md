@@ -44,7 +44,15 @@ Read `.claude/settings.json`:
 - [ ] No overly broad matchers that would slow every tool call
 - [ ] Deny patterns don't block normal development workflows
 
-### 6. Git Integration
+### 6. ARCHITECTURE.md
+- [ ] Exists at repo root (warn if missing — `/claude-init` should have generated it)
+- [ ] Under 120 lines (warn if over)
+- [ ] No placeholder text from templates (e.g., `<What this system does>`, `<ASCII diagram>`)
+- [ ] Directory Structure section matches actual top-level directories (compare against `ls`)
+- [ ] Entry Points section references files that actually exist
+- [ ] CLAUDE.md references it (should contain "ARCHITECTURE.md" somewhere)
+
+### 7. Git Integration
 - [ ] `.claude/settings.local.json` is in `.gitignore`
 - [ ] `.claude/agent-memory-local/` is in `.gitignore`
 - [ ] No secrets in any `.claude/` files (grep for API keys, tokens, passwords)
