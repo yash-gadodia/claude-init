@@ -124,6 +124,56 @@ Use subagents in parallel to write tests for different layers:
 - Tests verify behavior, not implementation details
 - Mocks only at system boundaries (external APIs, email, etc.)
 
+## Step 1.75: Generate ARCHITECTURE.md (if none exists)
+
+If the repo has no `ARCHITECTURE.md` (or equivalent like `docs/architecture.md`), generate one at the repo root.
+
+This is the AI-facing documentation layer. CLAUDE.md is the quick reference (loaded every conversation), but ARCHITECTURE.md is the deep context that `/plan`, `/onboard`, and the architect agent read on demand — keeping CLAUDE.md lean while giving Claude full project understanding when it needs it.
+
+### What to include:
+
+```markdown
+# [Project Name] — Architecture
+
+## Overview
+<What this system does, who uses it, in 2-3 sentences>
+
+## System Map
+<ASCII diagram or structured list showing major modules/services and how they connect>
+
+## Directory Structure
+<Top-level directories with one-line descriptions of responsibility>
+<Only include directories that matter — skip node_modules, .git, etc.>
+
+## Data Flow
+<How a typical request/action moves through the system>
+<From entry point (HTTP request, CLI command, event) to response/output>
+
+## Key Design Decisions
+<Why the stack was chosen — inferred from package files, framework, and patterns>
+<Major architectural patterns in use (MVC, hexagonal, microservices, monolith, etc.)>
+<Any non-obvious choices visible in the code (why X over Y)>
+
+## Module Boundaries
+<Which modules own what responsibility>
+<How modules communicate (imports, events, APIs, shared DB, message queue)>
+
+## External Dependencies
+<Third-party services, APIs, databases the system talks to>
+<How they're configured (env vars, config files)>
+
+## Entry Points
+<Main entry points into the codebase — where to start reading>
+<CLI: main.ts/app.py, Web: route definitions, Library: public API surface>
+```
+
+### Rules for ARCHITECTURE.md:
+- Write it based on what you ACTUALLY found in the code, not generic templates
+- Keep it under 120 lines — density over verbosity
+- Focus on "what connects to what" and "why" — Claude can read individual files itself
+- Don't duplicate CLAUDE.md content (commands, conventions)
+- If an ARCHITECTURE.md already exists, read it but don't overwrite — suggest additions only
+
 ## Step 2: Generate Configuration
 
 Based on the analysis, generate these files in the target repo. Use the templates from `${CLAUDE_SKILL_DIR}/../../../templates/` as starting points, but CUSTOMIZE everything to the specific codebase.
@@ -140,6 +190,8 @@ Generate at the repo root. Must include:
 - **Do NOT section**: Stack-specific anti-patterns
 
 Keep it under 80 lines. Every line must earn its place.
+
+Include this line in the CLAUDE.md: `Read ARCHITECTURE.md for detailed architecture context before planning or making structural changes.`
 
 ### 2b. Agents (`.claude/agents/`)
 Generate these agent personas, tuned to the detected stack:

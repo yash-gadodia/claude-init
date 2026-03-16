@@ -38,6 +38,25 @@ claude
 /claude-init
 ```
 
+### What Happens When You Run `/claude-init`
+
+1. **Analyze** — Scans your codebase in parallel: stack, framework, architecture, tests, CI, conventions
+2. **Bootstrap tests** — If no test framework exists, installs one and writes a baseline test suite
+3. **Generate ARCHITECTURE.md** — Creates AI-facing architecture documentation (system map, data flow, design decisions, module boundaries) if none exists
+4. **Generate `.claude/` config** — CLAUDE.md, agents, skills, rules, and hooks — all tailored to what was found
+5. **Report** — Shows what was generated and suggests next steps
+
+After setup, you get these commands in your repo:
+
+| Command | When to use |
+|---------|-------------|
+| `/plan` | Before starting any non-trivial feature — reads ARCHITECTURE.md for context |
+| `/onboard` | When you or a teammate joins the repo — instant mental model |
+| `/test` | Write tests using your actual framework and patterns |
+| `/review` | Pre-commit review against your project's conventions |
+| `/update` | After your codebase evolves — refresh config without losing customizations |
+| `/doctor` | Validate that everything in `.claude/` is working correctly |
+
 **Or install manually:**
 
 ```bash
@@ -56,9 +75,13 @@ cp -r ~/claude-init/.claude/skills/{setup,onboard,update,doctor} ~/.claude/skill
 
 ## What Gets Generated
 
+### ARCHITECTURE.md
+
+AI-facing architecture documentation at the repo root. Not loaded every conversation (that would waste tokens), but read on demand by `/plan`, `/onboard`, and the architect agent when deep context is needed. Contains system overview, directory map, data flow, design decisions, module boundaries, and entry points. Under 120 lines.
+
 ### CLAUDE.md
 
-A lean (under 80 lines) project file containing actual commands, architecture, conventions, and patterns found in your codebase. Every line earns its place.
+A lean (under 80 lines) project file containing actual commands, architecture, conventions, and patterns found in your codebase. Every line earns its place. References ARCHITECTURE.md for deeper context.
 
 ### Agents
 

@@ -21,6 +21,7 @@ Turn a feature request into a vetted implementation plan.
 
 ### Phase 2: Explore
 Understand what exists:
+- Read ARCHITECTURE.md for system-level context (module boundaries, data flow, design decisions)
 - Find related code (Grep for keywords)
 - Read the files that will need to change
 - Identify patterns to follow

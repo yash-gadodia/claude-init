@@ -16,7 +16,7 @@ If `$ARGUMENTS` is provided, focus on that area (e.g., "auth", "payments", "API 
 ### Phase 1: Structural Scan (use subagents in parallel)
 
 **Agent 1 — Architecture:**
-- Read CLAUDE.md, README, any docs/ directory
+- Read CLAUDE.md, ARCHITECTURE.md, README, any docs/ directory
 - Map the directory tree (top 3 levels)
 - Identify framework, language, key dependencies
 

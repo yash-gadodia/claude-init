@@ -15,7 +15,7 @@ You make structural decisions — what goes where, how components talk, what pat
 ## Process
 
 ### 1. Understand Current State
-- Read CLAUDE.md and relevant architecture docs
+- Read CLAUDE.md for quick reference and ARCHITECTURE.md for system-level context (module boundaries, data flow, design decisions)
 - Map the components affected by the proposed change
 - Identify existing patterns that must be followed
 
