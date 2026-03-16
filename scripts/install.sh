@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # claude-init installer
-# Copies setup, onboard, update, and doctor skills to ~/.claude/skills/
+# Copies claude-init, onboard, update, and doctor skills to ~/.claude/skills/
 
 REPO_URL="https://github.com/yash-gadodia/claude-init"
 INSTALL_DIR="$HOME/.claude/skills"
@@ -24,14 +24,14 @@ git clone --depth 1 "$REPO_URL" "$TMPDIR/claude-init" 2>/dev/null
 mkdir -p "$INSTALL_DIR"
 
 # Copy core skills (the ones that run FROM claude-init, not templates)
-for skill in setup onboard update doctor; do
+for skill in claude-init onboard update doctor; do
   if [ -d "$TMPDIR/claude-init/.claude/skills/$skill" ]; then
     cp -r "$TMPDIR/claude-init/.claude/skills/$skill" "$INSTALL_DIR/"
-    echo "  Installed /skill: $skill"
+    echo "  Installed /$skill"
   fi
 done
 
-# Also copy the templates directory so /setup can reference them
+# Also copy the templates directory so /claude-init can reference them
 TEMPLATES_DIR="$HOME/.claude/claude-init-templates"
 if [ -d "$TMPDIR/claude-init/templates" ]; then
   rm -rf "$TEMPLATES_DIR"
@@ -41,10 +41,10 @@ fi
 
 echo ""
 echo "Done! Skills installed:"
-echo "  /setup   — Analyze a repo and generate .claude/ config"
-echo "  /onboard — Quick onboarding to any codebase"
-echo "  /update  — Re-analyze and update existing config"
-echo "  /doctor  — Validate your .claude/ setup"
+echo "  /claude-init — Analyze a repo and generate .claude/ config"
+echo "  /onboard     — Quick onboarding to any codebase"
+echo "  /update      — Re-analyze and update existing config"
+echo "  /doctor      — Validate your .claude/ setup"
 echo ""
 echo "Usage: cd /path/to/your-repo && claude"
-echo "Then type: /setup"
+echo "Then type: /claude-init"

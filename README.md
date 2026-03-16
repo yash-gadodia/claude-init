@@ -12,7 +12,7 @@
 
 ---
 
-Point `claude-init` at any existing codebase, run `/setup`, and get a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) configuration — `CLAUDE.md`, agents, skills, rules, and hooks — all tailored to your stack, framework, and patterns.
+Point `claude-init` at any existing codebase, run `/claude-init`, and get a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) configuration — `CLAUDE.md`, agents, skills, rules, and hooks — all tailored to your stack, framework, and patterns.
 
 ## Why
 
@@ -33,7 +33,7 @@ curl -fsSL https://raw.githubusercontent.com/yash-gadodia/claude-init/main/scrip
 ```bash
 cd /path/to/your-repo
 claude
-/setup
+/claude-init
 ```
 
 **Or install manually:**
@@ -47,7 +47,7 @@ cp -r ~/claude-init/.claude/skills/{setup,onboard,update,doctor} ~/.claude/skill
 
 | Command | Description |
 |---------|------------|
-| `/setup` | Analyze a repo and generate the full `.claude/` configuration |
+| `/claude-init` | Analyze a repo and generate the full `.claude/` configuration |
 | `/onboard` | Get oriented on any codebase — architecture, patterns, how to run things |
 | `/update` | Re-analyze and refresh config without overwriting your customizations |
 | `/doctor` | Validate your `.claude/` setup — verify commands, paths, hooks, and agents |

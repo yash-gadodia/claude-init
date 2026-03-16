@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": "https://github.com/yash-gadodia/claude-init",
   "skills": [
-    "skills/setup",
+    "skills/claude-init",
     "skills/onboard",
     "skills/update",
     "skills/doctor"

@@ -1,6 +1,6 @@
 ---
 name: doctor
-description: "Validate your .claude/ configuration. Checks that commands work, paths exist, hooks are valid, and agents are well-formed. Use after /setup or /update to catch issues."
+description: "Validate your .claude/ configuration. Checks that commands work, paths exist, hooks are valid, and agents are well-formed. Use after /claude-init or /update to catch issues."
 allowed-tools: Read, Bash, Glob, Grep
 ---
 

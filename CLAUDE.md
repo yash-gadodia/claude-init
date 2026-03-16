@@ -4,7 +4,7 @@ Makes any repo AI-native by generating a complete `.claude/` configuration tailo
 
 ## What This Does
 
-Point this at any existing (or new) repo and run `/setup` to:
+Point this at any existing (or new) repo and run `/claude-init` to:
 1. Analyze the codebase (language, framework, tests, CI, architecture, patterns)
 2. Generate a tailored `CLAUDE.md` with project-specific commands, architecture docs, and conventions
 3. Generate agent personas (architect, developer, QA, reviewer, researcher) tuned to the stack
@@ -21,19 +21,19 @@ git clone git@github.com:yash-gadodia/claude-init.git
 # Open the TARGET repo in Claude Code
 cd /path/to/your-existing-repo
 
-# Run setup pointing to this starter pack
-claude --skill-path ~/claude-init/.claude/skills/setup
+# Run claude-init pointing to this starter pack
+claude --skill-path ~/claude-init/.claude/skills/claude-init
 
 # Or copy the skills into the target repo first
-cp -r ~/claude-init/.claude/skills/setup /path/to/repo/.claude/skills/
+cp -r ~/claude-init/.claude/skills/claude-init /path/to/repo/.claude/skills/
 cd /path/to/repo && claude
-# Then type: /setup
+# Then type: /claude-init
 ```
 
 ## Architecture
 
 - `templates/` — Template files that get customized per-repo during setup
-- `.claude/skills/setup/` — The main generator skill (analyzes repo, writes config)
+- `.claude/skills/claude-init/` — The main generator skill (analyzes repo, writes config)
 - `.claude/skills/onboard/` — Quick onboarding skill for new devs joining a repo
 - `.claude/agents/` — Agent definitions used by the setup process itself
 - `scripts/` — Helper scripts for stack detection

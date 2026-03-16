@@ -1,11 +1,11 @@
 ---
-name: setup
+name: claude-init
 description: "Analyze any codebase and generate a complete .claude/ configuration to make it AI-native. Use when setting up Claude Code for a new or existing repo. Handles cold-start by detecting stack, framework, patterns, and generating tailored CLAUDE.md, agents, skills, rules, and hooks."
 argument-hint: "[repo-path]"
 allowed-tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 ---
 
-# Setup: Make Any Repo AI-Native
+# claude-init: Make Any Repo AI-Native
 
 You are an expert at configuring Claude Code for maximum effectiveness on any codebase.
 
