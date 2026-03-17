@@ -1,32 +1,49 @@
 ---
 name: clarify
-description: "Turn a messy feature request into a clean, structured spec. Use when requirements are vague, conversational, or incomplete."
-argument-hint: "[feature request]"
+description: "Turn vague requests into structured, testable specs through collaborative design. Auto-triggered when requirements are ambiguous. Explores intent, constraints, and alternatives before implementation. Also available as /clarify."
 allowed-tools: Read, Grep, Glob, Write
 ---
 
-# Clarify: Messy Request -> Clean Spec
+# Clarify: Idea → Design → Spec
 
-Transform vague requirements into implementation-ready specifications.
+Transform vague requirements into implementation-ready specifications through structured dialogue.
 
-## Input
-`$ARGUMENTS` — a feature request in any format (Slack message, ticket, verbal description).
+## When This Triggers
+
+Automatically when:
+- The request is ambiguous or has multiple valid interpretations
+- The request spans multiple subsystems or involves architecture decisions
+- You'd have to guess at important details to start implementing
+
+Skip when: the request is clear and specific enough to plan directly.
 
 ## Process
 
-### 1. Extract Intent
-What problem is being solved? Who has it? What does success look like?
+### 1. Explore Context
 
-### 2. Ask Clarifying Questions (max 3)
-Only ask if genuinely ambiguous. For everything else, make a reasonable assumption and state it.
+Before asking a single question, check the codebase:
+- Read ARCHITECTURE.md for system context
+- Find related code — are there existing patterns for this type of feature?
+- Check recent commits — is there related work in progress?
 
+Don't ask things you can answer by reading.
+
+### 2. Clarify Intent (max 3 questions)
+
+Ask questions **one at a time**. Prefer multiple choice.
+
+Good: "Should this work for unauthenticated users too, or only logged-in? (a) logged-in only (b) both (c) only unauthenticated"
 Bad: "What tech stack should we use?" (you can see the codebase)
-Good: "Should this also work for unauthenticated users, or only logged-in?"
+Bad: Asking 5 questions at once
 
-### 3. Check the Codebase
-- Are there existing patterns for this type of feature?
-- Is there related code we should extend rather than build from scratch?
-- Are there existing tests that show expected behavior?
+Focus on: purpose, constraints, success criteria. Not implementation details — that comes in planning.
+
+### 3. Propose Approaches
+
+For non-trivial work, propose 2-3 approaches:
+- Lead with your recommendation and why
+- Show trade-offs (complexity, time, risk, flexibility)
+- YAGNI ruthlessly — remove unnecessary features from all options
 
 ### 4. Write the Spec
 
@@ -36,12 +53,13 @@ Good: "Should this also work for unauthenticated users, or only logged-in?"
 ## Problem
 <1-2 sentences: what pain point this solves>
 
-## User Stories
-- As a [role], I want [action] so that [benefit]
+## Solution
+<The chosen approach, 2-3 sentences>
 
 ## Acceptance Criteria
 - [ ] Given [context], when [action], then [result]
-- [ ] Edge case: [scenario] -> [expected behavior]
+- [ ] Edge case: [scenario] → [expected behavior]
+- [ ] Error case: [failure mode] → [expected handling]
 
 ## Assumptions
 <What we assumed that wasn't explicit in the request>
@@ -56,10 +74,15 @@ Good: "Should this also work for unauthenticated users, or only logged-in?"
 ```
 
 ### 5. Present for Approval
-Show the spec. Don't start implementation until approved.
+
+Show the spec. **Don't start implementation until approved.**
+
+If the scope covers multiple independent subsystems, suggest breaking into separate specs — one per subsystem, each with its own plan → implement cycle.
 
 ## Rules
-- No vague language. "Fast" -> "p99 < 200ms". "Secure" -> "requires auth + input validation".
+
+- No vague language. "Fast" → "p99 < 200ms". "Secure" → "requires auth + input validation".
 - Every acceptance criterion must be independently testable
-- If the request is already clear, skip to step 4. Don't over-process.
-- Keep specs under 40 lines. Short > long.
+- If the request is already clear, skip to the spec. Don't over-process.
+- Keep specs under 40 lines
+- One question per message — don't overwhelm

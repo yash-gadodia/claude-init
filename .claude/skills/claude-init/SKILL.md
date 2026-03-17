@@ -223,6 +223,8 @@ Keep it under 80 lines. Every line must earn its place.
 
 Include this line in the CLAUDE.md: `Read ARCHITECTURE.md for detailed architecture context before planning or making structural changes.`
 
+Include a brief note: `Claude automatically follows a development workflow (clarify → plan → implement → test → self-review) scaled to task size. You don't need to invoke /plan or /test manually.`
+
 ### 2b. Agents (`.claude/agents/`)
 Generate these agent personas, tuned to the detected stack:
 
@@ -249,14 +251,15 @@ Each agent must:
 Always generate:
 1. **git.md** — Based on ACTUAL commit style from git log (conventional commits? Jira refs? squash policy?)
 2. **testing.md** — Based on the ACTUAL test framework, patterns, and conventions (from Step 1.5)
+3. **workflow.md** — Automatic development workflow. This is the rule that makes Claude automatically clarify → plan → implement → test → self-review without the user needing to type slash commands. Scale rigor to task size (trivial = just do it, large = full workflow with devil's advocate).
 
 Conditionally generate (only if project-specific content found):
-3. **code-style.md** — Only if there are non-obvious conventions (unusual import ordering, specific naming patterns, etc.). Skip if the project just uses a standard linter config.
-4. **api.md** — Only if API routes detected. Must reference actual response shapes, error patterns, auth middleware found in the code. Scope with `paths:`.
-5. **database.md** — Only if ORM/migrations detected. Must reference actual migration patterns, schema conventions. Scope with `paths:`.
-6. **frontend.md** — Only if frontend components detected. Must reference actual component patterns, state management conventions. Scope with `paths:`.
-7. **security.md** — Only if the project has specific security patterns (auth middleware, input sanitization, CSP headers). Don't generate generic OWASP advice.
-8. **performance.md** — Only if specific performance patterns found (caching, connection pooling, lazy loading).
+4. **code-style.md** — Only if there are non-obvious conventions (unusual import ordering, specific naming patterns, etc.). Skip if the project just uses a standard linter config.
+5. **api.md** — Only if API routes detected. Must reference actual response shapes, error patterns, auth middleware found in the code. Scope with `paths:`.
+6. **database.md** — Only if ORM/migrations detected. Must reference actual migration patterns, schema conventions. Scope with `paths:`.
+7. **frontend.md** — Only if frontend components detected. Must reference actual component patterns, state management conventions. Scope with `paths:`.
+8. **security.md** — Only if the project has specific security patterns (auth middleware, input sanitization, CSP headers). Don't generate generic OWASP advice.
+9. **performance.md** — Only if specific performance patterns found (caching, connection pooling, lazy loading).
 
 **The test**: for each rule file, ask "would removing this cause Claude to make a mistake on THIS project?" If no, don't generate it.
 
@@ -264,16 +267,20 @@ Conditionally generate (only if project-specific content found):
 
 ### 2d. Skills (`.claude/skills/`)
 
+Skills are detailed playbooks for specific development activities. They are **auto-triggered by the `workflow.md` rule** — Claude follows the development workflow automatically without the user typing slash commands. Users CAN still invoke them manually (e.g., `/plan` to force just a planning step), but the default is automatic.
+
 Only generate skills that add value beyond what Claude already does. A skill must change Claude's behavior, not just describe a process Claude would follow anyway.
 
-**Always generate (these genuinely change behavior):**
-1. **plan/SKILL.md** — Planning skill with built-in devil's advocate challenge. Forces structured thinking before implementation.
-2. **review/SKILL.md** — Code review against THIS project's conventions (not generic). Must reference actual linter config, patterns, and anti-patterns.
-3. **test/SKILL.md** — Test generation using the project's actual test framework, patterns, and conventions from Step 1.5.
-4. **clarify/SKILL.md** — Product clarifier that turns messy requests into structured, testable specs.
+**Always generate (auto-triggered by workflow rule):**
+1. **plan/SKILL.md** — Bite-sized implementation planning with devil's advocate challenge. Tasks should be 2-5 minutes each with exact file paths and TDD steps. Auto-triggered for medium+ tasks.
+2. **tdd/SKILL.md** (in `skills/test/`) — RED-GREEN-REFACTOR cycle with rationalization prevention. Must reference the project's actual test framework and commands. Auto-triggered during implementation. This replaces a generic "write tests" skill — it enforces test-FIRST, not test-after.
+3. **review/SKILL.md** — Two-stage review: spec compliance first (does it match what was requested?), then code quality (bugs, security, conventions). Auto-triggered after implementation.
+4. **verify/SKILL.md** — Verification before completion. No success claims without fresh evidence. Auto-triggered before any "done"/"fixed"/"passing" claim.
+5. **clarify/SKILL.md** — Collaborative design through structured dialogue. Explores intent, proposes approaches, writes testable specs. Auto-triggered when requirements are ambiguous.
+6. **subagent-dev/SKILL.md** — Subagent-driven development. Fresh subagent per task + two-stage review (spec compliance → code quality). Auto-triggered for plans with 3+ independent tasks.
 
-**Conditionally generate (only if the project benefits from structured process):**
-5. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
+**Conditionally generate:**
+7. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
 
 **Do NOT generate by default (Claude already does these well without a skill):**
 - `/fix` — Claude's default debugging is already "reproduce → locate → fix"
@@ -281,6 +288,8 @@ Only generate skills that add value beyond what Claude already does. A skill mus
 - `/refactor` — Claude already runs tests before/after when asked to refactor
 
 These can be added later via `/update` if the user wants the structured process.
+
+**Every generated skill must be project-specific.** Reference the actual test framework and commands (`pytest -x`, `vitest run`, etc.), not generic `npm test`. Reference actual file patterns, conventions, and tools detected during analysis. This is the advantage over generic workflow plugins — every skill is tailored to THIS project.
 
 ### 2e. Hooks (`.claude/settings.json`)
 
