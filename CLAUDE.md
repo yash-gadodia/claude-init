@@ -6,11 +6,12 @@ Makes any repo AI-native by generating a complete `.claude/` configuration tailo
 
 Point this at any existing (or new) repo and run `/claude-init` to:
 1. Analyze the codebase (language, framework, tests, CI, architecture, patterns)
-2. Generate a tailored `CLAUDE.md` with project-specific commands, architecture docs, and conventions
-3. Generate agent personas (architect, developer, QA, reviewer, researcher) tuned to the stack
-4. Generate rules for code style, security, testing, and git workflows
-5. Generate skills for planning, code review, testing, and devil's advocate challenges
-6. Generate hooks for safety guardrails (block force pushes, credential reads, etc.)
+2. Bootstrap a test suite if none exists
+3. Generate ARCHITECTURE.md for deep project context
+4. Generate tailored `CLAUDE.md`, agents, rules, skills, and hooks
+5. Skills include: clarify (with spec persistence), plan, TDD, review, verify, subagent-dev, finish
+6. Every skill has rationalization prevention ("Red Flags — STOP" tables)
+7. Auto-triggered workflow rule — Claude follows the full pipeline without slash commands
 
 ## Usage
 

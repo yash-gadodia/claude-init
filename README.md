@@ -46,16 +46,20 @@ claude
 4. **Generate `.claude/` config** — CLAUDE.md, agents, skills, rules, and hooks — all tailored to what was found
 5. **Report** — Shows what was generated and suggests next steps
 
-After setup, you get these commands in your repo:
+After setup, Claude automatically follows a development workflow (clarify → plan → TDD → verify → review → finish) scaled to task size. No slash commands needed — but you can invoke any step manually:
 
 | Command | When to use |
 |---------|-------------|
-| `/plan` | Before starting any non-trivial feature — reads ARCHITECTURE.md for context |
-| `/onboard` | When you or a teammate joins the repo — instant mental model |
-| `/test` | Write tests using your actual framework and patterns |
-| `/review` | Pre-commit review against your project's conventions |
-| `/update` | After your codebase evolves — refresh config without losing customizations |
-| `/doctor` | Validate that everything in `.claude/` is working correctly |
+| `/clarify` | Turn vague requests into testable specs |
+| `/plan` | Before starting any non-trivial feature |
+| `/tdd` | Enforce test-first development |
+| `/review` | Two-stage review: spec compliance → code quality |
+| `/verify` | Prove completion claims with fresh evidence |
+| `/finish` | Land work: merge, PR, keep branch, or discard |
+| `/subagent-dev` | Execute plans with fresh subagent per task |
+| `/onboard` | When you or a teammate joins the repo |
+| `/update` | After your codebase evolves — refresh config |
+| `/doctor` | Validate your `.claude/` setup |
 
 **Or install manually:**
 
@@ -99,37 +103,44 @@ Model-tiered personas that know your stack:
 
 ### Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `/plan` | Feature planning with built-in devil's advocate challenge |
-| `/review` | Pre-commit code review against project conventions |
-| `/test` | Generate tests using your actual test framework and patterns |
-| `/fix` | Fix a specific error: reproduce, locate, fix, regression test |
-| `/debug` | Open-ended investigation: hypothesize, isolate, root cause |
-| `/refactor` | Safe refactoring with tests green before and after |
-| `/devils-advocate` | Stress-test a design — find every flaw before shipping |
-| `/clarify` | Turn a messy request into a clean, testable spec |
+Auto-triggered by the workflow rule — Claude follows these automatically, scaled to task complexity. Users can also invoke manually.
+
+| Skill | Purpose | Generated |
+|-------|---------|-----------|
+| `/clarify` | Turn vague requests into testable specs with spec persistence and review | Always |
+| `/plan` | Feature planning with devil's advocate challenge | Always |
+| `/tdd` | RED-GREEN-REFACTOR with rationalization prevention | Always |
+| `/review` | Two-stage: spec compliance first, then code quality | Always |
+| `/verify` | No completion claims without fresh evidence | Always |
+| `/subagent-dev` | Fresh subagent per task + two-stage review | Always |
+| `/finish` | Land work: verify → merge/PR/keep/discard | Always |
+| `/devils-advocate` | Stress-test a design before shipping | When complex project |
 
 ### Rules
 
-Path-scoped rules that only activate for relevant files:
+Project-specific rules — only generated when they'd prevent Claude from making a mistake on your project:
 
-| Rule | Scope | Generated |
-|------|-------|-----------|
-| `code-style` | Global | Always |
-| `security` | Global | Always |
-| `testing` | Global | Always |
-| `git` | Global | Always |
-| `api` | `src/api/**`, `routes/**` | When API routes detected |
-| `database` | `prisma/**`, `migrations/**` | When ORM/migrations detected |
-| `frontend` | `src/components/**`, `app/**` | When frontend detected |
-| `performance` | Global | When web app or API |
+| Rule | Generated |
+|------|-----------|
+| `git` | Always — matches your actual commit style from git log |
+| `testing` | Always — your actual test framework, patterns, conventions |
+| `workflow` | Always — auto-triggered development pipeline (clarify → plan → TDD → verify → review → finish) |
+| `code-style` | When non-obvious conventions found (skip if just standard linter) |
+| `api` | When API routes detected — actual response shapes, error patterns |
+| `database` | When ORM/migrations detected — actual migration patterns |
+| `frontend` | When frontend components detected — actual component patterns |
+| `security` | When specific security patterns found (not generic OWASP) |
+| `performance` | When specific patterns found (caching, connection pooling) |
 
 ### Safety Hooks
 
-Deterministic, command-based guardrails that block destructive operations:
+Deterministic, command-based guardrails — minimal to avoid friction:
 
-`rm -rf` · `git push --force` · `git reset --hard` · `git clean -fd` · `curl | sh` · `npm publish` · `docker push` · `terraform destroy` · credential file writes · `~/.ssh/` reads · `~/.aws/` reads
+**Always:** Block writing to `.env*`, `.pem`, `.key`, `.cert`, credential files
+
+**Team projects** (>1 contributor): Block `git push --force`, `npm publish`, `docker push`, `terraform destroy`. Deny reading `~/.ssh/`, `~/.aws/`, `~/.gnupg/`
+
+**Solo dev:** Minimal hooks only — no false positives on legitimate commands
 
 ## Stack Detection
 
@@ -147,17 +158,21 @@ Analyzes and tailors config for:
 
 ## Design Principles
 
-**Progressive disclosure** — Skill descriptions are ~100 tokens (always loaded). Full instructions load only when invoked. Dozens of skills without burning your context window.
+**Auto-triggered workflow** — Generated `workflow.md` rule makes Claude automatically follow clarify → plan → TDD → verify → review → finish, scaled to task size. No slash commands needed.
 
-**Stack-aware** — Every reference in the generated config points to real commands, real file paths, and real patterns from your actual codebase. No generic placeholders.
+**Rationalization prevention** — Every skill includes "Red Flags — STOP" tables listing the exact thoughts that signal an agent is about to skip process discipline. Inspired by [obra/superpowers](https://github.com/obra/superpowers).
 
-**Deterministic safety** — Hooks use shell commands with pattern matching, not LLM evaluation. Fast, reliable, zero false negatives on destructive operations.
+**Spec persistence** — The clarify skill saves specs to `docs/specs/`, dispatches a reviewer subagent, and gates on user approval before planning. Specs become artifacts that plans trace back to.
 
-**Model-tiered agents** — Opus for architecture and critical thinking. Sonnet for implementation and review. Haiku for exploration and docs. Cost-effective by default.
+**Progressive disclosure** — Skill descriptions are ~100 tokens (always loaded). Full instructions load only when invoked.
 
-**RALPH loop** — The developer agent uses Read-Act-Log-Pause-Hallucination-check for structured self-correction during long tasks.
+**Stack-aware** — Every reference points to real commands, real file paths, and real patterns from your actual codebase.
 
-**Non-destructive updates** — `/update` re-analyzes your repo and proposes changes. It never overwrites your customizations — only generated sections get refreshed.
+**Model-tiered agents** — Opus for architecture. Sonnet for implementation and review. Haiku for exploration and docs.
+
+**RALPH loop** — Developer agent uses Read-Act-Log-Pause-Hallucination-check for self-correction.
+
+**Non-destructive updates** — `/update` re-analyzes without overwriting customizations.
 
 ## Extras
 
@@ -178,7 +193,7 @@ People and projects that shaped this:
 
 - **Shaun Chong**, CTO @ Ninja Van — 4-stage agent pipeline architecture, RALPH loop concept, "tests as trust layer" framing
 - [Trail of Bits' claude-code-config](https://github.com/trailofbits/claude-code-config) — security-first defaults
-- [obra/superpowers](https://github.com/obra/superpowers) — skill TDD and progressive disclosure patterns
+- [obra/superpowers](https://github.com/obra/superpowers) — rationalization prevention, spec review loops, TDD discipline, subagent status protocol, finish workflow, progressive disclosure
 - [snarktank/ralph](https://github.com/snarktank/ralph) — RALPH autonomous loop
 - [Anthropic's official best practices](https://code.claude.com/docs/en/best-practices)
 
