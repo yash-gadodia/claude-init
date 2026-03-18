@@ -217,6 +217,10 @@ Generate at the repo root. Must include:
 - **Testing section**: Actual test framework, location, and run commands
 - **Git section**: Actual commit style from git log
 - **Patterns to follow**: Key patterns found in the codebase (import style, error handling, etc.)
+- **Workflow section**: Include these three rules — they prevent Claude's most common failure modes:
+  - "After 2 failed attempts at the same approach, stop and rethink"
+  - "Verify before claiming done — run tests/commands and show output"
+  - "Delegate verbose operations (test runs, log analysis) to subagents to preserve context"
 - **Do NOT section**: Stack-specific anti-patterns
 
 Keep it under 80 lines. Every line must earn its place.
@@ -278,9 +282,10 @@ Only generate skills that add value beyond what Claude already does. A skill mus
 4. **verify/SKILL.md** — Verification before completion. No success claims without fresh evidence. Auto-triggered before any "done"/"fixed"/"passing" claim.
 5. **clarify/SKILL.md** — Collaborative design through structured dialogue. Explores intent, proposes approaches, writes testable specs. Auto-triggered when requirements are ambiguous.
 6. **subagent-dev/SKILL.md** — Subagent-driven development. Fresh subagent per task + two-stage review (spec compliance → code quality). Auto-triggered for plans with 3+ independent tasks.
+7. **finish/SKILL.md** — Land completed work. Verify tests, present options (merge/PR/keep/discard), execute with safety checks. Auto-triggered after implementation and review pass.
 
 **Conditionally generate:**
-7. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
+8. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
 
 **Do NOT generate by default (Claude already does these well without a skill):**
 - `/fix` — Claude's default debugging is already "reproduce → locate → fix"

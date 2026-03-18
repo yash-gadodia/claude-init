@@ -26,7 +26,7 @@ Fall back to sequential implementation when tasks are tightly coupled or the pla
 
 ### 1. Setup
 
-- Read the plan file and extract ALL tasks with their full text
+- **Read the plan file ONCE.** Extract every task with its full text, file paths, and context upfront. When dispatching each subagent, provide the full task text directly — never make the subagent read the plan file itself.
 - Note any cross-task dependencies or shared context
 - Create a task list to track progress
 
@@ -64,6 +64,7 @@ After all tasks:
 - Run the FULL test suite (not just individual tests)
 - Verify all tests pass with fresh output
 - Present results to user
+- Trigger the `/finish` workflow to land the work (merge, PR, keep, or discard)
 
 ## Model Selection
 
@@ -91,3 +92,17 @@ Use the least powerful model that handles each role:
 - **Don't make subagents read the full plan** — provide only the relevant task text
 - **Fix issues before moving on** — reviewer found problems = implementer fixes = reviewer re-reviews
 - **Never start on main/master** — create a feature branch first
+
+## Red Flags — STOP
+
+These thoughts mean you're about to cut corners:
+
+| Thought | Reality |
+|---------|---------|
+| "Close enough to spec" | Close enough = not done. Spec reviewer decides, not you. |
+| "Skip review just this once" | The one you skip is the one that breaks prod. |
+| "Force retry, same approach" | If it failed, something must change. More context? Better model? Smaller task? |
+| "I can review my own code" | Self-review supplements, never replaces, external review. |
+| "This task is too small to review" | Small tasks have small reviews. Still do them. |
+
+If you catch yourself thinking any of these: stop, follow the two-stage review.

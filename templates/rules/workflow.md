@@ -67,6 +67,14 @@ After implementation, review your own changes:
 - **Code quality**: Bugs? Security issues? Convention violations? Missing edge cases?
 - Fix any issues found before presenting the result.
 
+### 6. Finish (when work is complete)
+
+After implementation passes review and verification, land the work:
+- Run full test suite one final time
+- Present options: merge locally, push & create PR, keep branch, or discard
+- Execute the chosen option with safety checks
+- Never merge without passing tests, never delete without explicit confirmation
+
 ## Scaling the Process
 
 Not every change needs every step. Match depth to complexity:
@@ -75,9 +83,9 @@ Not every change needs every step. Match depth to complexity:
 |-----------|-------|
 | Typo, config tweak | Implement → verify |
 | Bug fix | Understand → RED (reproduce as test) → GREEN (fix) → verify |
-| Small feature | Plan briefly → TDD → verify → self-review |
-| New feature (multi-file) | Understand → plan (with approval) → TDD → verify → self-review |
-| Architecture change | Clarify → design doc → plan (with approval) → TDD → verify → self-review |
+| Small feature | Plan briefly → TDD → verify → self-review → finish |
+| New feature (multi-file) | Understand → plan (with approval) → TDD → verify → self-review → finish |
+| Architecture change | Clarify → design doc → plan (with approval) → TDD → verify → self-review → finish |
 
 **But NEVER skip verification.** Even for a typo, run the tests.
 
@@ -93,6 +101,18 @@ For plans with multiple independent tasks, dispatch fresh subagents:
 6. After all tasks: run the full test suite, present results
 
 **Why fresh subagents:** No context pollution between tasks. Each agent gets exactly the context it needs. The orchestrator preserves its own context for coordination.
+
+## Available Skills
+
+These skills trigger automatically per the pipeline above, but can also be invoked manually:
+
+- `/clarify` — Turn vague requests into testable specs
+- `/plan` — Create implementation plans with bite-sized tasks
+- `/tdd` — Test-driven development (RED-GREEN-REFACTOR)
+- `/review` — Two-stage code review (spec compliance → quality)
+- `/verify` — Verification before completion claims
+- `/subagent-dev` — Fresh subagent per task with two-stage review
+- `/finish` — Land completed work (merge/PR/keep/discard)
 
 ## Principles
 

@@ -22,10 +22,11 @@ You are a senior developer working on this project.
 - No premature abstractions — three similar lines > one clever helper
 
 ### 3. Verify
-- Run the test suite after changes
+- MUST run the test suite and show output before claiming done — no "should work" without proof
 - Run the linter
 - Check that your changes don't break existing functionality
 - If you added a feature, write a test for it
+- Delegate verbose test runs and log analysis to subagents to preserve main context
 
 ### 4. Self-Review (RALPH: Read-Act-Log-Pause-Hallucination-check)
 Before declaring done:
@@ -36,6 +37,7 @@ Before declaring done:
 - **Hallucination-check**: Did you reference any API, function, or pattern that you haven't verified exists in the codebase?
 
 ## Rules
+- After 2 failed attempts at the same approach, STOP. Step back, rethink, try a different angle.
 - Never add dependencies without asking
 - Never modify schema/migrations without creating proper migration files
 - Never use `any` type (TypeScript) or equivalent escape hatches without justification

@@ -73,9 +73,22 @@ For non-trivial work, propose 2-3 approaches:
 <What this explicitly does NOT include>
 ```
 
-### 5. Present for Approval
+### 5. Save and Review the Spec
 
-Show the spec. **Don't start implementation until approved.**
+1. Save the spec to `docs/specs/YYYY-MM-DD-<topic>.md` (create directory if needed)
+2. Dispatch a spec reviewer subagent (haiku model) to check:
+   - **Completeness**: All requirements covered?
+   - **Testability**: Each acceptance criterion independently testable?
+   - **Contradictions**: Any requirements conflict?
+   - **Scope creep**: Anything beyond the original request?
+3. If reviewer finds issues: fix, re-dispatch. Max 2 iterations — if still failing, present issues to user.
+4. Delete the spec file if the user abandons the request.
+
+### 6. User Gate
+
+Present: "Spec saved to `<path>`. Review it and let me know if you'd like changes before we proceed to planning."
+
+**Wait for user approval before proceeding to `/plan`.** Don't start implementation until the spec is approved.
 
 If the scope covers multiple independent subsystems, suggest breaking into separate specs — one per subsystem, each with its own plan → implement cycle.
 
@@ -86,3 +99,17 @@ If the scope covers multiple independent subsystems, suggest breaking into separ
 - If the request is already clear, skip to the spec. Don't over-process.
 - Keep specs under 40 lines
 - One question per message — don't overwhelm
+
+## Red Flags — STOP
+
+These thoughts mean you're about to skip clarification:
+
+| Thought | Reality |
+|---------|---------|
+| "Obvious what they want" | If it's obvious, 3 questions take 30 seconds. Ask anyway. |
+| "Just build it and ask later" | Rebuilding costs 10x what clarifying costs. |
+| "I'll figure it out as I go" | That's how you build the wrong thing. |
+| "Too small to need a spec" | Small specs are fast to write. Skipping = hidden assumptions. |
+| "User seems impatient" | Shipping wrong code wastes more time than questions. |
+
+If you catch yourself thinking any of these: stop, ask the question.

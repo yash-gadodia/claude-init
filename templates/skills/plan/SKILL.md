@@ -93,6 +93,20 @@ Show the plan to the user. **Wait for approval before ANY implementation.**
 - Tasks should be independently verifiable — each one leaves the codebase in a working state
 - If a task is too big to hold in your head, split it
 
+## Red Flags — STOP
+
+These thoughts mean you're about to skip the process:
+
+| Thought | Reality |
+|---------|---------|
+| "Too simple to plan" | Complex surprises hide in "simple" changes. Plan takes 2 minutes. |
+| "I already know what to build" | You know what, not how. Planning catches the how. |
+| "Just a quick change" | Quick changes break things when unplanned. |
+| "Planning is overhead" | Unplanned work takes 2-5x longer to debug. |
+| "I'll plan as I go" | That's called no plan. |
+
+If you catch yourself thinking any of these: stop, follow the process.
+
 ## Plan Quality Rules
 
 - Plans should be under 50 lines. If longer, the scope is too big — split it.

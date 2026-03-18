@@ -85,3 +85,17 @@ For each changed file, check:
 - Spec compliance BEFORE code quality — wrong order wastes time
 - If everything looks good, say so. Don't invent issues.
 - Critical issues block. Don't approve with unresolved critical issues.
+
+## Red Flags — STOP
+
+These thoughts mean you're about to rubber-stamp:
+
+| Thought | Reality |
+|---------|---------|
+| "Looks fine to me" | That's not a review. Check spec compliance line by line. |
+| "It's just a small change" | Small changes cause big bugs. Review anyway. |
+| "I wrote it so I know it works" | Author blindness is real. Review your own code like a stranger's. |
+| "Tests pass so it's fine" | Tests verify behavior, not quality or security. |
+| "No critical issues" without reading diff | You haven't checked. Read the diff first. |
+
+If you catch yourself thinking any of these: stop, read the diff, follow both stages.
