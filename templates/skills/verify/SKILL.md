@@ -18,6 +18,18 @@ NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
 
 If you haven't run the verification command in this response, you cannot claim it passes.
 
+## Current Repo State
+
+Loaded fresh when this skill triggers — so you can't claim "tests passed" from a stale mental model:
+
+Uncommitted changes:
+
+!`git status --short 2>/dev/null || echo "(not a git repo)"`
+
+Last commit:
+
+!`git log -1 --oneline 2>/dev/null || echo "(no git history)"`
+
 ## The Gate
 
 Before claiming ANY status (done, fixed, passing, working, complete):

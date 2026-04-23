@@ -14,11 +14,13 @@ Re-analyze the codebase and update the existing `.claude/` configuration to matc
 
 Read and fingerprint every existing config file:
 - `CLAUDE.md` — extract sections, note any `<!-- custom -->` or `<!-- generated -->` markers
-- `ARCHITECTURE.md` — check if it exists and is still accurate
+- `ARCHITECTURE.md` — check if it exists and capture its Directory Structure section for drift comparison
 - `agents/` — list all agents and their model/tool config
-- `skills/` — list all skills
+- `skills/` — list all skills and their `paths:` scopes (not just rules — skills can be path-scoped too)
 - `rules/` — list all rules and their `paths:` scopes
-- `settings.json` — read hooks and permissions
+- `settings.json` — read hooks, permissions, and any `outputStyle` field
+- `output-styles/` — list any custom output styles (generated `tdd.md`, user-added ones)
+- `settings.local.json.example` — check it exists so new contributors can bootstrap personal overrides
 
 ### Step 2: Re-Analyze the Codebase
 
@@ -42,8 +44,15 @@ Compare the re-analysis against the current config. Identify:
 **Stale things to update:**
 - Commands that no longer exist (e.g., `npm test` changed to `vitest`)
 - Agent references to removed patterns
-- Rules scoped to paths that no longer exist
+- Rules or skills scoped to paths that no longer exist (`paths:` globs match zero files)
 - ARCHITECTURE.md sections that no longer match the codebase (new modules, changed data flow, removed dependencies)
+
+**ARCHITECTURE.md drift check (always run):**
+- Compare the Directory Structure section against the actual top-level directories (`ls -d */`)
+- Compare the Entry Points section against files that actually exist
+- Compare the External Dependencies section against `package.json` / `Cargo.toml` / `requirements.txt`
+- If ANY of these drift more than ~15%, regenerate the ARCHITECTURE.md using the Step 1.75 template from `/claude-init` (present the new version as a diff against the old one; preserve `<!-- custom -->` blocks)
+- Minor drift (one or two new/gone directories): propose Edit-level patches, not full regeneration
 
 **Things to preserve (never touch):**
 - Any content between `<!-- custom -->` markers

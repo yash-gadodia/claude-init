@@ -291,21 +291,54 @@ These can be added later via `/update` if the user wants the structured process.
 
 **Every generated skill must be project-specific.** Reference the actual test framework and commands (`pytest -x`, `vitest run`, etc.), not generic `npm test`. Reference actual file patterns, conventions, and tools detected during analysis. This is the advantage over generic workflow plugins — every skill is tailored to THIS project.
 
-### 2e. Hooks (`.claude/settings.json`)
+**Path-scope project-specific skills.** Workflow skills (plan, tdd, verify, review, clarify, subagent-dev) apply everywhere — no `paths:` needed. Any project-specific skill you generate (e.g., a Supabase RLS skill, a Prisma migrations skill, an API-conventions skill) MUST include a `paths:` frontmatter entry so it only loads when Claude is working in the relevant directory. Example:
 
-Keep hooks minimal. Overly aggressive hooks create friction that makes people disable them entirely.
+```yaml
+---
+name: api-conventions
+description: "Response shapes, error handling, and auth middleware patterns for this project's REST API. Auto-loads when editing API routes."
+paths: src/api/**, src/routes/**, app/api/**
+allowed-tools: Read, Grep, Glob
+---
+```
 
-**Always include:**
-- **PreToolUse (Write)**: Block writing to `.env`, `.pem`, `.key`, `.cert`, credential files — this catches real mistakes with near-zero false positives
+Use dynamic shell context where it helps — `` !`git diff --stat` `` in review/verify preloads fresh state without a tool-call round-trip. Do NOT use `` !`cmd` `` for commands that write, delete, or take long to run.
 
-**For team projects (>1 contributor detected via git log):**
-- **PreToolUse (Bash)**: Block `git push --force`, `npm publish`, `docker push`, `terraform destroy`
-- **Permissions deny list**: Block reading `~/.ssh/`, `~/.aws/`, `~/.gnupg/`
+### 2e. Settings and hooks (two-tier split)
+
+Split the settings into a committed file and a personal file. This mirrors how real teams actually use Claude Code: everyone shares the safety net, each dev adds their own approve-without-prompting shortcuts.
+
+**`.claude/settings.json` — committed, team-wide safety:**
+
+- **PreToolUse (Bash)**: Regex-block `git push --force`, `npm publish`, `docker push`, `terraform destroy`, `kubectl delete namespace`, `rm -rf /` / `rm -rf ~`. Use word-boundaries (`\b`) so `rm -rf ./dist` doesn't match.
+- **PreToolUse (Write|Edit)**: Hard-block writes to `.env*`, `*.pem`, `*.key`, `*.cert`, `*.p12`, `~/.ssh/`, `~/.aws/`, `~/.gnupg/` based on the basename (not full path — so `src/env.ts` stays allowed, only `.env` / `local.env` / `.env.production` match).
+- **permissions.ask (not deny)** for `.claude/settings.json` and `.claude/hooks/**` (both project and `~/.claude/`): prompts the user before Claude edits the safety layer, but doesn't hard-block. Hard-block would kill `/update` — `ask` gives the user control without the friction. This is slavaspitsyn's "hook self-protection" pattern softened for real-world UX.
+- **PostToolUse (Write|Edit)**: Auto-format the file that was just written (prettier for JS/TS/JSON/MD/CSS, ruff/black for Python, gofmt for Go, rustfmt for Rust). Non-blocking — `|| true` if the formatter isn't installed. This is Boris Cherny's #1 tip: tight feedback loops are the single biggest Claude Code quality lever.
+- **PreCompact**: Snapshot the branch name, `git status --short`, and last 10 commits into `.claude/checkpoints/checkpoint-<ts>.md` before compaction. Survives context loss.
+- **permissions.deny**: `~/.ssh/**`, `~/.aws/**`, `~/.gnupg/**`, `.env*`, and the four dangerous-bash patterns in duplicate (belt + suspenders — permission rules catch what hook regex might miss).
+- **MCP deny patterns** (only if `.mcp.json` or `mcp_servers` detected): add regex entries like `mcp__.*__write.*`, `mcp__.*__delete.*`, `mcp__.*__create.*` so MCP side effects need explicit approval. Remember MCP matchers use JS regex — `mcp__memory` alone matches nothing; you need `mcp__memory__.*`.
+
+**`.claude/settings.local.json.example` — committed, acts as onboarding, NOT loaded by Claude Code:**
+
+- Show the shape of `permissions.allow` with project-relevant entries (`Bash(npm test:*)`, `Bash(pytest:*)`, `Bash(git status:*)`, `Bash(gh pr view:*)`) so a new dev can `cp settings.local.json.example settings.local.json` and have sensible personal approvals on day one.
+- Header `//` comment explaining: "copy to `settings.local.json` for PERSONAL overrides — gitignored, your teammates won't see it."
+
+**`.claude/settings.local.json` is gitignored** — each dev maintains their own. Do NOT generate it; just generate the `.example` so they know the shape.
 
 **Skip for solo dev projects:**
-- Don't add Bash hooks for `rm -rf`, `git reset --hard`, etc. — these cause false positives on legitimate commands like `rm -rf ./dist` and a solo dev knows what they're doing
+- Skip the Bash destructive-op regex hook — solo devs running `rm -rf ./dist` get false positives and will disable hooks entirely. Keep the credential-file Write|Edit block (universal value) and the hook self-protection block (always valuable).
 
-### 2f. Monorepo Support
+### 2f. Output styles (`.claude/output-styles/`)
+
+Output styles inject rules into Claude's **system prompt**, not just CLAUDE.md. That makes them stronger than rules for anything that must never be skipped — Claude sees them earlier and can't "forget" them under pressure.
+
+**Generate `tdd.md` automatically when tests exist (or were bootstrapped in Step 1.5).** The template at `templates/output-styles/tdd.md` enforces the RED-GREEN-REFACTOR loop and the verification gate at the system-prompt level. Copy it as-is — do not inline-edit with project-specific commands (the TDD skill already handles commands). The user enables it by running `/config` → Output style → TDD, or by adding `"outputStyle": "TDD"` to `.claude/settings.json`.
+
+**Mention it in the final report** so the user knows it exists and how to activate it.
+
+Do NOT generate additional output styles speculatively. They're powerful — one is plenty unless the user asks.
+
+### 2g. Monorepo Support
 If a monorepo is detected:
 - Generate a root `CLAUDE.md` with shared conventions
 - Generate a root `ARCHITECTURE.md` with the system-level view (how packages/services connect, shared infrastructure, deployment topology)
@@ -314,17 +347,24 @@ If a monorepo is detected:
 - Scope rules to specific packages via `paths:` frontmatter
 - Each package's CLAUDE.md should reference the root with `@../../CLAUDE.md`
 
-### 2g. .gitignore additions
-Ensure `.claude/settings.local.json` and `.claude/agent-memory-local/` are gitignored.
+### 2h. .gitignore additions
+Ensure the following are gitignored:
+- `.claude/settings.local.json` (personal overrides)
+- `.claude/agent-memory-local/` (per-session memory)
+- `.claude/checkpoints/` (PreCompact hook drops checkpoint files here — regenerable, no value in git)
+
+Do NOT gitignore `.claude/settings.local.json.example` — that's the onboarding artifact, must be committed.
 
 ## Step 3: Verify & Report
 
 After generation:
 1. Count files generated
 2. Show the CLAUDE.md and ARCHITECTURE.md to the user for review
-3. List all agents, skills, rules, and hooks created
+3. List all agents, skills, rules, hooks, and output styles created
 4. Report test suite status (framework installed, number of tests, all passing?)
-5. Suggest next steps (e.g., "Run `/onboard` to get oriented", "Customize CLAUDE.md further")
+5. Tell the user about the TDD output style and how to activate it (`/config` → Output style → TDD)
+6. If a `settings.local.json.example` was generated, tell them to `cp .claude/settings.local.json.example .claude/settings.local.json` to get personal allow-lists on day one
+7. Suggest next steps (e.g., "Run `/onboard` to get oriented", "Run `/doctor` to validate the config", "Customize CLAUDE.md further")
 
 ## Rules
 

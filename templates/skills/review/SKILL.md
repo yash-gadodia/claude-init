@@ -18,9 +18,15 @@ Automatically after implementing any change. Also useful before committing or cr
 
 Does the code match what was requested?
 
-```bash
-git diff HEAD  # or git diff against the base branch
-```
+Change summary (loaded fresh when this skill triggers):
+
+!`git diff --stat HEAD 2>/dev/null || git diff --stat`
+
+Recent commits on this branch:
+
+!`git log --oneline -5 2>/dev/null || echo "(no git history)"`
+
+Read the full diff for any file that shows up above before judging it — `git diff HEAD -- <file>` for unstaged + staged, `git diff <base>...HEAD -- <file>` when reviewing a PR. Never review from memory.
 
 For each requirement/acceptance criterion from the plan or request:
 - [ ] Is there code implementing it?
@@ -79,7 +85,7 @@ For each changed file, check:
 
 ## Rules
 
-- Run `git diff` — don't guess at changes
+- The preloaded diff stat above tells you what changed. Read the full diff of each file — don't guess.
 - Read full files for context, not just diffs
 - Be specific: line numbers, code snippets, concrete fixes
 - Spec compliance BEFORE code quality — wrong order wastes time

@@ -32,11 +32,15 @@ cd /path/to/repo && claude
 
 ## Architecture
 
+See `ARCHITECTURE.md` for the full system map. Quick tour:
+
 - `templates/` — Template files that get customized per-repo during setup
 - `.claude/skills/claude-init/` — The main generator skill (analyzes repo, writes config)
 - `.claude/skills/onboard/` — Quick onboarding skill for new devs joining a repo
+- `.claude/skills/update/` — Refresh config when the repo evolves
+- `.claude/skills/doctor/` — Validate generated config
 - `.claude/agents/` — Agent definitions used by the setup process itself
-- `scripts/` — Helper scripts for stack detection
+- `scripts/` — Install script and helpers
 
 ## Design Principles
 
