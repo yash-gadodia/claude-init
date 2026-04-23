@@ -1,0 +1,25 @@
+{
+  "//": "Copy this file to .claude/settings.local.json to add PERSONAL overrides on top of the committed .claude/settings.json. This file is gitignored — your teammates won't see it. Use it for things the team shouldn't have to agree on: tools you trust, env flags you want locally, paths you want to skip approval on.",
+
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(pytest:*)",
+      "Bash(cargo test:*)",
+      "Bash(go test:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Read(~/.config/**)"
+    ]
+  },
+
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0"
+  }
+}

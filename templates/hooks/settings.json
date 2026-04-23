@@ -1,4 +1,6 @@
 {
+  "//": "Team-wide settings, committed to git. Personal overrides go in .claude/settings.local.json (gitignored). See .claude/settings.local.json.example for the shape.",
+
   "hooks": {
     "PreToolUse": [
       {
@@ -6,25 +8,51 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi 'git\\s+push\\s+(-f|--force)|npm\\s+publish|docker\\s+push|terraform\\s+destroy|kubectl\\s+delete\\s+(namespace|ns)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: destructive or sensitive operation. Ask user for explicit approval.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
+            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi 'git\\s+push\\s+(-f\\b|--force\\b)|npm\\s+publish\\b|docker\\s+push\\b|terraform\\s+destroy\\b|kubectl\\s+delete\\s+(namespace|ns)\\b|rm\\s+-rf\\s+(/|~|\\$HOME)(\\s|$)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: destructive or sensitive operation. Ask the user for explicit approval before proceeding.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
             "timeout": 5000,
-            "statusMessage": "Safety check..."
+            "statusMessage": "Safety check"
           }
         ]
       },
       {
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi '\\.env(\\.[a-z]+)?\"|\\.pem\"|\\.key\"|\\.cert\"|\\.p12\"|\\.pfx\"|/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing to credential or secret file.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | grep -oE '\"file_path\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' | head -1 | sed -E 's/.*\"([^\"]+)\"$/\\1/'); BASE=$(basename \"$FILE\" 2>/dev/null); if echo \"$BASE\" | grep -qE '^\\.env$|^\\.env\\.[^.]+$|\\.env$|\\.pem$|\\.key$|\\.cert$|\\.p12$|\\.pfx$'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing to a credential or secret file ('\"$FILE\"'). If this is not a secret (e.g. .env.example), ask the user to confirm.\"}'; elif echo \"$FILE\" | grep -qE '/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing inside a credentials directory ('\"$FILE\"').\"}'; else echo '{\"decision\": \"allow\"}'; fi",
             "timeout": 5000,
-            "statusMessage": "Checking write target..."
+            "statusMessage": "Checking write target"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | grep -oE '\"file_path\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' | head -1 | sed -E 's/.*\"([^\"]+)\"$/\\1/'); if [ -z \"$FILE\" ] || [ ! -f \"$FILE\" ]; then exit 0; fi; case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md|*.css|*.html) command -v prettier >/dev/null 2>&1 && prettier --write --log-level=silent \"$FILE\" 2>/dev/null || true ;; *.py) command -v ruff >/dev/null 2>&1 && ruff format \"$FILE\" 2>/dev/null || { command -v black >/dev/null 2>&1 && black -q \"$FILE\" 2>/dev/null; } || true ;; *.go) command -v gofmt >/dev/null 2>&1 && gofmt -w \"$FILE\" 2>/dev/null || true ;; *.rs) command -v rustfmt >/dev/null 2>&1 && rustfmt --quiet \"$FILE\" 2>/dev/null || true ;; esac; exit 0",
+            "timeout": 10000,
+            "statusMessage": "Auto-format"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "D=\".claude/checkpoints\"; mkdir -p \"$D\" 2>/dev/null; TS=$(date +%Y%m%d-%H%M%S); { echo '# Pre-compact checkpoint'; echo \"Created: $(date -u +%FT%TZ)\"; echo; echo '## Branch'; git branch --show-current 2>/dev/null; echo; echo '## Uncommitted changes'; git status --short 2>/dev/null; echo; echo '## Recent commits'; git log --oneline -10 2>/dev/null; } > \"$D/checkpoint-$TS.md\" 2>/dev/null; echo '{\"decision\": \"allow\"}'",
+            "timeout": 5000,
+            "statusMessage": "Checkpointing before compact"
           }
         ]
       }
     ]
   },
+
   "permissions": {
     "deny": [
       "Bash(git push --force*)",
@@ -32,9 +60,23 @@
       "Bash(npm publish*)",
       "Bash(docker push*)",
       "Bash(terraform destroy*)",
+      "Bash(kubectl delete namespace*)",
+      "Bash(kubectl delete ns *)",
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
-      "Read(~/.gnupg/**)"
+      "Read(~/.gnupg/**)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/.env)",
+      "Read(**/.env.*)"
+    ],
+    "ask": [
+      "Edit(.claude/settings.json)",
+      "Edit(.claude/hooks/**)",
+      "Write(.claude/settings.json)",
+      "Write(.claude/hooks/**)",
+      "Edit(~/.claude/settings.json)",
+      "Edit(~/.claude/hooks/**)"
     ]
   }
 }
