@@ -164,7 +164,11 @@ Analyzes and tailors config for:
 
 **Spec persistence** — The clarify skill saves specs to `docs/specs/`, dispatches a reviewer subagent, and gates on user approval before planning. Specs become artifacts that plans trace back to.
 
-**Progressive disclosure** — Skill descriptions are ~100 tokens (always loaded). Full instructions load only when invoked.
+**Progressive disclosure** — Skill descriptions are ~100 tokens (always loaded). Full instructions load only when invoked. Skills over ~150 lines push long examples and scripts into sibling reference files so bundled-but-unread content costs nothing at startup.
+
+**Trigger-first descriptions** — Generated skill descriptions are third-person and carry an explicit `Use when…` / `Auto-triggered…` trigger, the field Claude matches against for discovery. `/doctor` flags descriptions that lack one.
+
+**Correct hook schema** — Safety hooks use the current `hookSpecificOutput.permissionDecision` form (`allow`/`deny`/`ask`/`defer`), not the legacy top-level `decision` field that `PreToolUse` silently ignores. An optional [tdd-guard](https://github.com/nizos/tdd-guard) hook is available for teams wanting hard tool-level test-first enforcement.
 
 **Stack-aware** — Every reference points to real commands, real file paths, and real patterns from your actual codebase.
 
@@ -180,8 +184,19 @@ Analyzes and tailors config for:
 |------|------------|
 | `templates/ci/claude-review.yml` | GitHub Actions workflow for automatic PR review with Claude |
 | `templates/ci/claude-test.yml` | GitHub Actions workflow to run tests on PRs (auto-detects package manager) |
+| `templates/hooks/tdd-guard.md` | Optional hard test-first enforcement hook (wraps [nizos/tdd-guard](https://github.com/nizos/tdd-guard)) |
 | `.claude-plugin/plugin.json` | Plugin manifest — installable via Claude Code's plugin system |
 | `scripts/install.sh` | One-command global installer |
+
+## Development
+
+The repo ships a zero-dependency test suite that validates its own templates, skills, agents, hooks, and installer — the same idea as the generated `/doctor` check, turned inward. Run it before opening a PR:
+
+```bash
+bash tests/run.sh
+```
+
+No dependencies are required; `python3`/`node` are used only for JSON validation when present. CI runs the suite on every push and PR via `.github/workflows/test.yml`.
 
 ## Contributing
 
@@ -195,7 +210,8 @@ People and projects that shaped this:
 - [Trail of Bits' claude-code-config](https://github.com/trailofbits/claude-code-config) — security-first defaults
 - [obra/superpowers](https://github.com/obra/superpowers) — rationalization prevention, spec review loops, TDD discipline, subagent status protocol, finish workflow, progressive disclosure
 - [snarktank/ralph](https://github.com/snarktank/ralph) — RALPH autonomous loop
-- [Anthropic's official best practices](https://code.claude.com/docs/en/best-practices)
+- [nizos/tdd-guard](https://github.com/nizos/tdd-guard) — hook-level test-first enforcement (optional template)
+- [Anthropic's official skill & hook docs](https://code.claude.com/docs/en/skills) — progressive disclosure, third-person trigger descriptions, the `hookSpecificOutput` decision schema
 
 ## License
 

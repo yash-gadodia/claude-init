@@ -296,6 +296,16 @@ These can be added later via `/update` if the user wants the structured process.
 
 **Every generated skill must be project-specific.** Reference the actual test framework and commands (`pytest -x`, `vitest run`, etc.), not generic `npm test`. Reference actual file patterns, conventions, and tools detected during analysis. This is the advantage over generic workflow plugins — every skill is tailored to THIS project.
 
+**Skill description = the discovery trigger (write it carefully):**
+- The `description` is the only part loaded at startup (progressive disclosure), so it's what Claude matches against to decide whether to invoke the skill. Make it earn that.
+- **Write in third person** ("Turn vague requests into specs", not "I turn…" or "You should…") — first/second person reads as a prompt injection and degrades matching.
+- **State both what it does AND when to use it.** Include an explicit trigger phrase — `Auto-triggered when …`, `Use when …`, or `Use before …`. A description with no trigger won't fire reliably.
+- Match specificity to fragility: scripted, low-freedom instructions for error-prone operations (migrations, releases); broad heuristics for judgment tasks (code review).
+
+**Keep SKILL.md focused; push detail into reference files (progressive disclosure):**
+- Target ~150 lines for SKILL.md; the hard ceiling is 500. The full body loads on every invocation, so length is a running cost.
+- If a skill needs long examples, schemas, checklists, or scripts, move them into sibling files (`reference.md`, `examples.md`, `scripts/`) and link to them from SKILL.md. Claude reads those only when needed, so bundled-but-unread content costs nothing at startup.
+
 **Path-scope project-specific skills.** Workflow skills (plan, tdd, verify, review, clarify, subagent-dev) apply everywhere — no `paths:` needed. Any project-specific skill you generate (e.g., a Supabase RLS skill, a Prisma migrations skill, an API-conventions skill) MUST include a `paths:` frontmatter entry so it only loads when Claude is working in the relevant directory. Example:
 
 ```yaml
@@ -332,6 +342,12 @@ Split the settings into a committed file and a personal file. This mirrors how r
 
 **Skip for solo dev projects:**
 - Skip the Bash destructive-op regex hook — solo devs running `rm -rf ./dist` get false positives and will disable hooks entirely. Keep the credential-file Write|Edit block (universal value) and the hook self-protection block (always valuable).
+
+**Hook decision schema (get this right — the old form is silently ignored):**
+- A `PreToolUse` command hook controls the call via `hookSpecificOutput`, NOT a top-level `decision` field. The legacy `{"decision": "allow"|"block"}` shape does NOT work for `PreToolUse`.
+- To **block**: emit `{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "<why>"}}`. Valid `permissionDecision` values: `allow`, `deny`, `ask`, `defer`.
+- To **allow silently** (the common case): print nothing and `exit 0`. Don't emit an "allow" object on the happy path — silence already lets the call proceed through the normal permission flow.
+- Optionally, add an opt-in TDD enforcement hook from `templates/hooks/tdd-guard.md` (references [nizos/tdd-guard](https://github.com/nizos/tdd-guard)) for teams that want a hard test-first gate, not just the instruction-level `/tdd` skill.
 
 ### 2f. Output styles (`.claude/output-styles/`)
 

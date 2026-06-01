@@ -28,6 +28,8 @@ For each `.claude/agents/*.md`:
 For each `.claude/skills/*/SKILL.md`:
 - [ ] Valid YAML frontmatter
 - [ ] Description is specific enough (not just "does stuff")
+- [ ] Description is third-person and contains a when-to-use trigger (`Use when…`, `Use before…`, or `Auto-triggered…`) — descriptions with no trigger won't reliably fire
+- [ ] SKILL.md body is under 500 lines (warn over ~150 — push long examples/scripts into sibling reference files)
 - [ ] If `context: fork`, verify no Task/Skill tool references in body (forked skills can't spawn subagents)
 - [ ] If `paths:` frontmatter exists, verify globs match at least one file (dead scopes = skill never loads)
 - [ ] `allowed-tools` uses real tool names (Read, Edit, Write, Bash, Grep, Glob, Agent — not Tool, File, etc.)
@@ -46,6 +48,7 @@ Read `.claude/settings.json`:
 - [ ] Hook commands are executable (if `type: command`)
 - [ ] No overly broad matchers that would slow every tool call
 - [ ] Deny patterns don't block normal development workflows
+- [ ] `PreToolUse` hooks use the current decision schema (`hookSpecificOutput.permissionDecision`), NOT the legacy `{"decision": "allow"|"block"}` form, which `PreToolUse` ignores
 - [ ] Regex matchers are anchored with word boundaries where needed (e.g., `git\s+push\s+(-f\b|--force\b)` not `git push.*-f` — the lazy form matches `git push-to-origin --forward`)
 - [ ] MCP matchers (if present) use regex form with `.*` (e.g., `mcp__memory__.*`, not `mcp__memory`)
 - [ ] PostToolUse formatters use `|| true` or `exit 0` so a missing tool doesn't block writes

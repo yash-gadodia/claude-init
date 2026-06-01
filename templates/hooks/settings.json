@@ -8,7 +8,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi 'git\\s+push\\s+(-f\\b|--force\\b)|npm\\s+publish\\b|docker\\s+push\\b|terraform\\s+destroy\\b|kubectl\\s+delete\\s+(namespace|ns)\\b|rm\\s+-rf\\s+(/|~|\\$HOME)(\\s|$)'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: destructive or sensitive operation. Ask the user for explicit approval before proceeding.\"}'; else echo '{\"decision\": \"allow\"}'; fi",
+            "command": "INPUT=$(cat); if echo \"$INPUT\" | grep -qEi 'git\\s+push\\s+(-f\\b|--force\\b)|npm\\s+publish\\b|docker\\s+push\\b|terraform\\s+destroy\\b|kubectl\\s+delete\\s+(namespace|ns)\\b|rm\\s+-rf\\s+(/|~|\\$HOME)(\\s|$)'; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Blocked: destructive or sensitive operation. Ask the user for explicit approval before proceeding.\"}}'; fi",
             "timeout": 5000,
             "statusMessage": "Safety check"
           }
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | grep -oE '\"file_path\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' | head -1 | sed -E 's/.*\"([^\"]+)\"$/\\1/'); BASE=$(basename \"$FILE\" 2>/dev/null); if echo \"$BASE\" | grep -qE '^\\.env$|^\\.env\\.[^.]+$|\\.env$|\\.pem$|\\.key$|\\.cert$|\\.p12$|\\.pfx$'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing to a credential or secret file ('\"$FILE\"'). If this is not a secret (e.g. .env.example), ask the user to confirm.\"}'; elif echo \"$FILE\" | grep -qE '/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"decision\": \"block\", \"reason\": \"Blocked: writing inside a credentials directory ('\"$FILE\"').\"}'; else echo '{\"decision\": \"allow\"}'; fi",
+            "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | grep -oE '\"file_path\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' | head -1 | sed -E 's/.*\"([^\"]+)\"$/\\1/'); BASE=$(basename \"$FILE\" 2>/dev/null); if echo \"$BASE\" | grep -qE '^\\.env$|^\\.env\\.[^.]+$|\\.env$|\\.pem$|\\.key$|\\.cert$|\\.p12$|\\.pfx$'; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Blocked: writing to a credential or secret file ('\"$FILE\"'). If this is not a secret (e.g. .env.example), ask the user to confirm.\"}}'; elif echo \"$FILE\" | grep -qE '/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Blocked: writing inside a credentials directory ('\"$FILE\"').\"}}'; fi",
             "timeout": 5000,
             "statusMessage": "Checking write target"
           }
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "D=\".claude/checkpoints\"; mkdir -p \"$D\" 2>/dev/null; TS=$(date +%Y%m%d-%H%M%S); { echo '# Pre-compact checkpoint'; echo \"Created: $(date -u +%FT%TZ)\"; echo; echo '## Branch'; git branch --show-current 2>/dev/null; echo; echo '## Uncommitted changes'; git status --short 2>/dev/null; echo; echo '## Recent commits'; git log --oneline -10 2>/dev/null; } > \"$D/checkpoint-$TS.md\" 2>/dev/null; echo '{\"decision\": \"allow\"}'",
+            "command": "D=\".claude/checkpoints\"; mkdir -p \"$D\" 2>/dev/null; TS=$(date +%Y%m%d-%H%M%S); { echo '# Pre-compact checkpoint'; echo \"Created: $(date -u +%FT%TZ)\"; echo; echo '## Branch'; git branch --show-current 2>/dev/null; echo; echo '## Uncommitted changes'; git status --short 2>/dev/null; echo; echo '## Recent commits'; git log --oneline -10 2>/dev/null; } > \"$D/checkpoint-$TS.md\" 2>/dev/null; exit 0",
             "timeout": 5000,
             "statusMessage": "Checkpointing before compact"
           }
