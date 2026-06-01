@@ -230,6 +230,17 @@ test_tdd_guard_optional() {
   matches  "$f" "[Oo]pt-in"          "tdd-guard is documented as opt-in"
 }
 
+test_update_template_sync() {
+  section "update skill: template-sync mode"
+  local f=".claude/skills/update/SKILL.md"
+  matches  "$f" "[Tt]emplate [Ss]ync"   "update has a template-sync step"
+  contains "$f" "claude-init-templates"  "template sync resolves the installed templates"
+  # it must know about the specific stale patterns it is meant to repair
+  contains "$f" '"decision"'             "template sync flags the legacy hook decision form"
+  contains "$f" "hookSpecificOutput"     "template sync names the modern hook schema as the fix"
+  contains "$f" "(template sync)"         "template-sync changes are tagged in the proposal"
+}
+
 test_line_limits() {
   section "template line limits (<=150)"
   for f in $(find templates -name '*.md' | sort); do
@@ -273,6 +284,7 @@ test_agents
 test_hooks
 test_skill_descriptions
 test_tdd_guard_optional
+test_update_template_sync
 test_line_limits
 test_installer
 test_no_conflict_markers

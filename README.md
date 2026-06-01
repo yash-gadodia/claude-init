@@ -178,6 +178,8 @@ Analyzes and tailors config for:
 
 **Non-destructive updates** — `/update` re-analyzes without overwriting customizations.
 
+**Template sync** — generated configs are static copies, so template fixes don't auto-propagate. `/update` includes a template-sync step that scans an existing project for known-stale generated patterns (e.g., the legacy `{"decision":...}` hook form) and proposes fixes — tagged `(template sync)`, applied only on approval. Re-run `install.sh` first to pull the latest templates, then `/update` (or `/doctor` to just report) in each project.
+
 ## Extras
 
 | File | Description |
