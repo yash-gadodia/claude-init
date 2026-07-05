@@ -27,7 +27,17 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking
 - `.claude/rules/` user-level (`~/.claude/rules/`) symlink patterns for team-shared rule libraries — possible template addition.
-- Subagent `persistent-memory` in generated researcher agent — adopt once it proves useful in real projects.
+
+## Cycle: 2026-07-05 (second run — blocked)
+
+### ⚠️ Attempted, blocked: fix stale `persistent-memory: true` frontmatter field
+- **Source:** https://code.claude.com/docs/en/sub-agents#enable-persistent-memory — the real subagent memory field is `memory: user|project|local` (a string enum), not a `persistent-memory: true` boolean. Confirmed by fetching the doc directly (not just a WebFetch summary).
+- **Bug found:** `.claude/skills/claude-init/SKILL.md:163` tells the generator to use `persistent-memory: true`, while `.claude/skills/claude-init/SKILL.md:159` (three lines earlier, same file) correctly says `memory: project` — internally inconsistent. `.claude/skills/doctor/SKILL.md:25` also validates the wrong field name (checks that `background`/`persistent-memory` are booleans if present). Neither `persistent-memory` field appears in any `templates/agents/*.md` file, so no generated-repo output is affected yet — the bug is confined to the two self-skill files.
+- **Why not fixed this cycle:** this session's tool permissions denied Edit/Write to any `.claude/skills/**/SKILL.md` path (tested on both `doctor/SKILL.md` and `claude-init/SKILL.md`, and confirmed the same paths are writable via plain `git`/file tooling in general — this looks like a session-scoped safety rail on the currently-loaded skill files, not a repo-level permission). Every other path in the repo (`templates/`, root files) was writable.
+- **Next step:** on a run with Edit access to `.claude/skills/**`, apply this exact fix — replace `persistent-memory: true` with `memory: project` (or `user`/`local`) in `claude-init/SKILL.md:163`, and update `doctor/SKILL.md:25`'s check to `background is a boolean if present; memory is one of user/project/local if present`. Small, mechanical, ~4 lines.
+
+### ❌ Rejected (no new candidate cleared the bar)
+- Also reviewed: hooks doc now lists ~29 event names (vs. 10 in `doctor/SKILL.md:49`'s checklist) and 5 handler `type`s (`command`/`http`/`mcp_tool`/`prompt`/`agent`, per https://code.claude.com/docs/en/hooks) — same self-skill write-block applies; deferred to the same future run as the fix above rather than proposing a second idea this cycle.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
