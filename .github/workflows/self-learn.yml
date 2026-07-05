@@ -1,0 +1,27 @@
+name: Weekly Self-Learning Loop
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC (11:00 SGT)
+  workflow_dispatch: {}
+
+jobs:
+  self-learn:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Read .github/prompts/self-learn.md and follow it exactly.
+            Today's date: run `date -u +%Y-%m-%d` to get it.
+          claude_args: |
+            --model claude-sonnet-5
+            --max-turns 80
