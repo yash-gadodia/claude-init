@@ -32,5 +32,6 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
 - One idea per cycle, ≤200 changed lines, citations required
-- PR only, human merges; never touch installer logic, workflows, LICENSE, PRIVACY.md
+- Commits land directly on main; `tests/run.sh` green is the hard gate
+- Never touch installer logic, workflows, LICENSE, PRIVACY.md
 - Rejected ideas live here forever; re-proposal requires a passed revisit date

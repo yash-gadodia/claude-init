@@ -202,10 +202,10 @@ Analyzes and tailors config for:
 
 ## Self-Learning Loop
 
-The repo improves itself. A weekly GitHub Action (`.github/workflows/self-learn.yml`) runs Claude against the ecosystem — the Claude Code changelog, official docs, and the best comparable repos (superpowers, trailofbits/claude-code-config, awesome-claude-code) — and proposes at most **one** evidenced improvement per week as a PR. It never merges anything itself.
+The repo improves itself. A weekly GitHub Action (`.github/workflows/self-learn.yml`) runs Claude against the ecosystem — the Claude Code changelog, official docs, and the best comparable repos (superpowers, trailofbits/claude-code-config, awesome-claude-code) — and lands at most **one** evidenced improvement per week directly on `main`.
 
 - `LEARNINGS.md` is the loop's memory: adopted ideas, rejected ideas (with reasons, so they're never re-proposed), and last-checked dates per source
-- Guardrails: one idea per cycle, ≤200 changed lines, mandatory citations, self-tests must pass, human review gate
+- Guardrails: one idea per cycle, ≤200 changed lines, mandatory citations, and `tests/run.sh` must pass before any commit lands
 - Setup: add an `ANTHROPIC_API_KEY` repo secret; trigger manually once via the Actions tab (`workflow_dispatch`) to validate
 
 ## Development
