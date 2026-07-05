@@ -12,7 +12,7 @@
 
 ---
 
-Point `claude-init` at any existing codebase, run `/claude-init`, and get a complete [Claude Code](https://docs.anthropic.com/en/docs/claude-code) configuration — `CLAUDE.md`, agents, skills, rules, and hooks — all tailored to your stack, framework, and patterns.
+Point `claude-init` at any existing codebase, run `/claude-init`, and get a complete [Claude Code](https://code.claude.com/docs) configuration — `CLAUDE.md`, agents, skills, rules, and hooks — all tailored to your stack, framework, and patterns.
 
 ## Why
 
@@ -65,7 +65,15 @@ After setup, Claude automatically follows a development workflow (clarify → pl
 
 ```bash
 git clone git@github.com:yash-gadodia/claude-init.git ~/claude-init
-cp -r ~/claude-init/.claude/skills/{setup,onboard,update,doctor} ~/.claude/skills/
+cp -r ~/claude-init/.claude/skills/{claude-init,onboard,update,doctor} ~/.claude/skills/
+cp -r ~/claude-init/templates ~/.claude/claude-init-templates
+```
+
+**Or load as a plugin** (skills arrive namespaced as `/claude-init:claude-init` etc.):
+
+```bash
+git clone git@github.com:yash-gadodia/claude-init.git ~/claude-init
+claude --plugin-dir ~/claude-init
 ```
 
 ## Commands
@@ -172,7 +180,9 @@ Analyzes and tailors config for:
 
 **Stack-aware** — Every reference points to real commands, real file paths, and real patterns from your actual codebase.
 
-**Model-tiered agents** — Opus for architecture. Sonnet for implementation and review. Haiku for exploration and docs.
+**AGENTS.md interop** — If the target repo already has an `AGENTS.md` for other coding agents, `/claude-init` symlinks rather than duplicates, so every tool reads one source of truth.
+
+**Model-tiered agents** — Opus for architecture. Sonnet for implementation and review. Haiku for exploration and docs. Templates use model aliases (`opus`/`sonnet`/`haiku`), so they track the current generation automatically.
 
 **RALPH loop** — Developer agent uses Read-Act-Log-Pause-Hallucination-check for self-correction.
 
@@ -189,6 +199,14 @@ Analyzes and tailors config for:
 | `templates/hooks/tdd-guard.md` | Optional hard test-first enforcement hook (wraps [nizos/tdd-guard](https://github.com/nizos/tdd-guard)) |
 | `.claude-plugin/plugin.json` | Plugin manifest — installable via Claude Code's plugin system |
 | `scripts/install.sh` | One-command global installer |
+
+## Self-Learning Loop
+
+The repo improves itself. A weekly GitHub Action (`.github/workflows/self-learn.yml`) runs Claude against the ecosystem — the Claude Code changelog, official docs, and the best comparable repos (superpowers, trailofbits/claude-code-config, awesome-claude-code) — and proposes at most **one** evidenced improvement per week as a PR. It never merges anything itself.
+
+- `LEARNINGS.md` is the loop's memory: adopted ideas, rejected ideas (with reasons, so they're never re-proposed), and last-checked dates per source
+- Guardrails: one idea per cycle, ≤200 changed lines, mandatory citations, self-tests must pass, human review gate
+- Setup: add an `ANTHROPIC_API_KEY` repo secret; trigger manually once via the Actions tab (`workflow_dispatch`) to validate
 
 ## Development
 

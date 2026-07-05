@@ -22,6 +22,7 @@ For each `.claude/agents/*.md`:
 - [ ] Valid YAML frontmatter (name, description present)
 - [ ] Model is valid (opus, sonnet, haiku, or a full model ID)
 - [ ] Referenced tools exist
+- [ ] `background` / `persistent-memory` are booleans if present
 - [ ] No empty markdown body
 
 ### 3. Skills
@@ -45,6 +46,7 @@ For each `.claude/rules/*.md`:
 ### 5. Hooks
 Read `.claude/settings.json`:
 - [ ] Valid JSON (strict — `"//"` comment keys are OK, but trailing commas and JS comments break Claude Code's parser)
+- [ ] Hook event names are real (SessionStart, SessionEnd, PreToolUse, PostToolUse, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, PermissionRequest — a typo like `preToolUse` or `OnEdit` silently never fires)
 - [ ] Hook commands are executable (if `type: command`)
 - [ ] No overly broad matchers that would slow every tool call
 - [ ] Deny patterns don't block normal development workflows

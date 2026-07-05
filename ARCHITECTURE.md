@@ -9,9 +9,10 @@ claude-init is a generator that turns any existing codebase into an AI-native on
 ```
 ~/claude-init (this repo)
 ├── .claude/skills/           ← self-skills (claude-init, onboard, update, doctor)
-│   └── claude-init/SKILL.md  ← the generator (reads repo, writes config)
-├── .claude/agents/           ← personas used *during* generation
-├── .claude/rules/            ← rules applied to this repo's own work
+│   └── claude-init/
+│       ├── SKILL.md          ← the generator (reads repo, writes config)
+│       └── reference/        ← detail loaded on demand (test bootstrap, ARCHITECTURE template)
+├── .claude-plugin/plugin.json ← plugin manifest (skills declared via ./.claude/skills/ paths)
 ├── templates/                ← stuff that gets copied/customized into target repos
 │   ├── agents/               ← architect, developer, qa, reviewer, researcher, devops, writer
 │   ├── skills/               ← plan, tdd, verify, review, clarify, subagent-dev, + optional

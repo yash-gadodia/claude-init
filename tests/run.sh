@@ -87,6 +87,15 @@ test_repo_structure() {
   for s in claude-init onboard update doctor; do
     have_file ".claude/skills/$s/SKILL.md"
   done
+  have_file ".claude/skills/claude-init/reference/test-bootstrap.md"
+  have_file ".claude/skills/claude-init/reference/architecture-template.md"
+  have_file ".github/workflows/self-learn.yml"
+  have_file ".github/prompts/self-learn.md"
+  have_file "LEARNINGS.md"
+  contains ".github/workflows/self-learn.yml" ".github/prompts/self-learn.md" "self-learn workflow reads its prompt file"
+  contains ".github/prompts/self-learn.md" "LEARNINGS.md" "self-learn prompt uses the learnings log"
+  contains ".claude/skills/claude-init/SKILL.md" "reference/test-bootstrap.md" "generator links its test-bootstrap reference"
+  contains ".claude/skills/claude-init/SKILL.md" "reference/architecture-template.md" "generator links its architecture-template reference"
   have_file "README.md"
   have_file "CLAUDE.md"
   have_file "LICENSE"

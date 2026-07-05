@@ -16,19 +16,16 @@ Point this at any existing (or new) repo and run `/claude-init` to:
 ## Usage
 
 ```bash
-# Clone this repo
-git clone git@github.com:yash-gadodia/claude-init.git
+# Install globally (skills → ~/.claude/skills/, templates → ~/.claude/claude-init-templates/)
+curl -fsSL https://raw.githubusercontent.com/yash-gadodia/claude-init/main/scripts/install.sh | bash
 
-# Open the TARGET repo in Claude Code
-cd /path/to/your-existing-repo
+# Or load the repo as a plugin
+git clone git@github.com:yash-gadodia/claude-init.git ~/claude-init
+claude --plugin-dir ~/claude-init
 
-# Run claude-init pointing to this starter pack
-claude --skill-path ~/claude-init/.claude/skills/claude-init
-
-# Or copy the skills into the target repo first
-cp -r ~/claude-init/.claude/skills/claude-init /path/to/repo/.claude/skills/
-cd /path/to/repo && claude
-# Then type: /claude-init
+# Then, in the TARGET repo:
+cd /path/to/your-existing-repo && claude
+# Type: /claude-init
 ```
 
 ## Architecture
@@ -40,8 +37,8 @@ See `ARCHITECTURE.md` for the full system map. Quick tour:
 - `.claude/skills/onboard/` — Quick onboarding skill for new devs joining a repo
 - `.claude/skills/update/` — Refresh config when the repo evolves
 - `.claude/skills/doctor/` — Validate generated config
-- `.claude/agents/` — Agent definitions used by the setup process itself
 - `scripts/` — Install script and helpers
+- `tests/run.sh` — zero-dependency self-test suite; run before committing template changes
 
 ## Design Principles
 

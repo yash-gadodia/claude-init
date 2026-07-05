@@ -61,20 +61,7 @@ This is critical. Without tests, Claude can't verify its own work. The entire "A
 
 ### If NO test framework is detected:
 
-**1. Pick the right framework for the stack:**
-
-| Stack | Test Framework | Why |
-|-------|---------------|-----|
-| TypeScript/JavaScript (Vite, Next.js, SvelteKit) | Vitest | Fast, native ESM, Vite-compatible |
-| TypeScript/JavaScript (legacy, webpack) | Jest | Widest ecosystem support |
-| Python | pytest | Industry standard, simple, powerful |
-| Rust | cargo test (built-in) | No setup needed |
-| Go | go test (built-in) | No setup needed |
-| Ruby/Rails | RSpec | Community standard |
-| PHP/Laravel | PHPUnit / Pest | Framework-native |
-| Elixir/Phoenix | ExUnit (built-in) | No setup needed |
-| Java/Spring | JUnit 5 | Framework standard |
-| Dart/Flutter | flutter test (built-in) | No setup needed |
+**1. Pick the right framework for the stack** — see the stack→framework table in `reference/test-bootstrap.md` (Vitest for modern TS/JS, pytest for Python, built-in runners for Rust/Go/Elixir/Flutter, etc.)
 
 **2. Install the test framework:**
 - Run the actual install command (e.g., `npm install -D vitest`, `pip install pytest`)
@@ -83,23 +70,7 @@ This is critical. Without tests, Claude can't verify its own work. The entire "A
 
 **3. Write a baseline test suite:**
 
-Use subagents in parallel to write tests for different layers:
-
-**Subagent A — Unit tests:**
-- Find pure functions, utilities, helpers, validators
-- Write tests for each with happy path + edge cases
-- Target: every file in `utils/`, `lib/`, `helpers/`, or equivalent
-
-**Subagent B — Integration tests (if API exists):**
-- Find route handlers / controllers / resolvers
-- Write request-response tests for each endpoint
-- Cover: success, auth failure, validation error, not found
-- Use the framework's built-in test client (supertest, httpx, etc.)
-
-**Subagent C — Component tests (if frontend exists):**
-- Find key UI components (not every component — focus on ones with logic)
-- Write render + interaction tests
-- Use the framework's testing library (Testing Library, Vue Test Utils, etc.)
+Use subagents in parallel to write tests per layer — unit (Subagent A), API integration (Subagent B, NOT optional when routes exist), frontend components (Subagent C). Full subagent briefs are in `reference/test-bootstrap.md`.
 
 **4. Run the suite and fix failures:**
 - Execute the full test suite
@@ -118,36 +89,8 @@ Use subagents in parallel to write tests for different layers:
 - Configure the QA agent and `/test` skill to match existing patterns exactly
 
 ### Test quality bar:
-- Every test has a descriptive name (`should reject expired tokens`, not `test 1`)
-- Tests are independent (no shared mutable state)
-- Tests are deterministic (no timing dependencies, no random data without seeding)
-- Tests verify behavior, not implementation details
-- Mocks only at system boundaries (external APIs, email, etc.)
-- **Assert exact expected values, not just ranges.** For known inputs, assert the exact expected output. Use `toBeCloseTo` for floating point, but always with a specific expected value.
-- **Pick one import style and be consistent.** If the config enables `globals: true` (Vitest) or uses `@jest/globals`, don't also import `describe`/`it`/`expect` in every test file. If you prefer explicit imports, don't enable globals. Inconsistency confuses contributors.
 
-**Examples — BAD vs GOOD assertions:**
-```typescript
-// BAD: passes even if calculation is completely wrong
-expect(result.total).toBeGreaterThan(0);
-expect(result.count).toBeTruthy();
-expect(formatted).toContain('1');
-
-// GOOD: catches regressions — exact expected values
-expect(result.total).toBe(42.5);
-expect(result.count).toBe(3);
-expect(formatted).toBe('1,234.50');
-
-// GOOD: floating point with specific expected value
-expect(calculateVolume(1, 1000, 1000, 1000, 'mm', 'M3')).toBeCloseTo(1.0, 5);
-
-// GOOD: locale-sensitive — pin the locale or match precisely
-expect(formatNumber(1234.5, 2, 'en-US')).toBe('1,234.50');
-```
-
-### Subagent requirements:
-- **Subagent B is NOT optional.** If the project has API routes, you MUST write integration tests for them using the framework's test client (Hono `app.request()`, supertest, httpx, etc.). Skipping API tests and only testing utilities leaves the most critical layer untested.
-- Each subagent must produce tests that would actually catch a real bug if the code regressed — not just verify "it runs without crashing."
+Follow the quality bar in `reference/test-bootstrap.md` — descriptive names, independent + deterministic tests, behavior over implementation, mocks only at system boundaries, **exact expected values (never bare ranges/truthiness)**, and one consistent import style. It includes BAD vs GOOD assertion examples; read it before writing any test.
 
 ## Step 1.75: Generate ARCHITECTURE.md (if none exists)
 
@@ -157,40 +100,7 @@ This is the AI-facing documentation layer. CLAUDE.md is the quick reference (loa
 
 ### What to include:
 
-```markdown
-# [Project Name] — Architecture
-
-## Overview
-<What this system does, who uses it, in 2-3 sentences>
-
-## System Map
-<ASCII diagram or structured list showing major modules/services and how they connect>
-
-## Directory Structure
-<Top-level directories with one-line descriptions of responsibility>
-<Only include directories that matter — skip node_modules, .git, etc.>
-
-## Data Flow
-<How a typical request/action moves through the system>
-<From entry point (HTTP request, CLI command, event) to response/output>
-
-## Key Design Decisions
-<Why the stack was chosen — inferred from package files, framework, and patterns>
-<Major architectural patterns in use (MVC, hexagonal, microservices, monolith, etc.)>
-<Any non-obvious choices visible in the code (why X over Y)>
-
-## Module Boundaries
-<Which modules own what responsibility>
-<How modules communicate (imports, events, APIs, shared DB, message queue)>
-
-## External Dependencies
-<Third-party services, APIs, databases the system talks to>
-<How they're configured (env vars, config files)>
-
-## Entry Points
-<Main entry points into the codebase — where to start reading>
-<CLI: main.ts/app.py, Web: route definitions, Library: public API surface>
-```
+Use the section-by-section template in `reference/architecture-template.md` (Overview, System Map, Directory Structure, Data Flow, Key Design Decisions, Module Boundaries, External Dependencies, Entry Points).
 
 ### Rules for ARCHITECTURE.md:
 - Write it based on what you ACTUALLY found in the code, not generic templates
@@ -229,6 +139,8 @@ Include this line in the CLAUDE.md: `Read ARCHITECTURE.md for detailed architect
 
 Include a brief note: `Claude automatically follows a development workflow (clarify → plan → implement → test → self-review) scaled to task size. You don't need to invoke /plan or /test manually.`
 
+**AGENTS.md interop:** If the repo already has an `AGENTS.md` (used by other coding agents), don't create a competing CLAUDE.md — symlink one to the other (`ln -s CLAUDE.md AGENTS.md`, or the reverse if AGENTS.md is the richer file) so every tool reads the same instructions. If the repo has neither, generate CLAUDE.md and add the AGENTS.md symlink.
+
 ### 2b. Agents (`.claude/agents/`)
 Generate these agent personas, tuned to the detected stack:
 
@@ -247,6 +159,8 @@ Each agent must:
 - Include `memory: project` for architect and developer agents
 - Include "Read and follow all rules in `.claude/rules/`" in their instructions
 - **Use the exact version numbers detected** — if Vitest 3.2.4 is installed, the QA agent must say "Vitest 3.x", not "Vitest 2.x". Cross-check versions against package.json/lockfile.
+
+Newer frontmatter fields worth using where they fit: `background: true` for long-running exploration/research agents, and `persistent-memory: true` when an agent benefits from remembering across sessions (e.g., researcher building up a codebase map). Don't add them speculatively — only when the agent's role calls for it.
 
 ### 2c. Rules (`.claude/rules/`)
 
