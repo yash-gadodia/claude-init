@@ -72,3 +72,4 @@ These thoughts mean you're about to make an unverified claim:
 - A test passing once doesn't prove it's not flaky — run twice if in doubt
 - If a subagent reports "success", verify independently
 - If you can't run verification (no test command, CI-only tests), say so explicitly instead of claiming success
+- If `docs/definition-of-done.md` exists, run through it as the final gate — it's the project-wide "is it ready?" checklist, distinct from the task's acceptance criteria

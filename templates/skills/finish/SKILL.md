@@ -18,6 +18,8 @@ Automatically after all implementation tasks pass review and verification.
 
 Run the FULL test suite. If ANY test fails, STOP. Fix before proceeding.
 
+If `docs/definition-of-done.md` exists, run through its checklist too — tests passing is necessary but not sufficient to land.
+
 ### 2. Determine Base Branch
 
 Check what branch you split from (`git log --oneline --graph -10`). Usually main or master. Ask if unclear.

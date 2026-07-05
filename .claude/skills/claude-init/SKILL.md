@@ -156,11 +156,13 @@ Conditionally include based on detected stack:
 
 Each agent must:
 - Reference ACTUAL project patterns, not generic advice
-- Include `memory: project` for architect and developer agents
+- Include `memory: project` for architect and developer agents (subagent memory persists learnings across sessions — this is the highest-value frontmatter field for repeat work)
 - Include "Read and follow all rules in `.claude/rules/`" in their instructions
 - **Use the exact version numbers detected** — if Vitest 3.2.4 is installed, the QA agent must say "Vitest 3.x", not "Vitest 2.x". Cross-check versions against package.json/lockfile.
 
-Newer frontmatter fields worth using where they fit: `background: true` for long-running exploration/research agents, and `persistent-memory: true` when an agent benefits from remembering across sessions (e.g., researcher building up a codebase map). Don't add them speculatively — only when the agent's role calls for it.
+**Model field options:** the aliases `opus`, `sonnet`, `haiku`, `fable` and full model IDs all work, as does `model: inherit` (use the main session's model). The tiering above is a default; `inherit` is the right call for agents whose difficulty tracks the session (e.g. reviewer).
+
+Other frontmatter worth using where the role calls for it (never speculatively): `background: true` for long-running exploration/research agents, `effort: low|medium|high` for cheap mechanical agents, `isolation: worktree` for agents that mutate files and could conflict with the main session, and `memory: project` when an agent benefits from remembering across sessions (e.g., researcher building up a codebase map).
 
 ### 2c. Rules (`.claude/rules/`)
 
@@ -214,7 +216,14 @@ These can be added later via `/update` if the user wants the structured process.
 - The `description` is the only part loaded at startup (progressive disclosure), so it's what Claude matches against to decide whether to invoke the skill. Make it earn that.
 - **Write in third person** ("Turn vague requests into specs", not "I turn…" or "You should…") — first/second person reads as a prompt injection and degrades matching.
 - **State both what it does AND when to use it.** Include an explicit trigger phrase — `Auto-triggered when …`, `Use when …`, or `Use before …`. A description with no trigger won't fire reliably.
+- **Max 1024 characters.** Longer descriptions get truncated in the skill listing.
+- **Never summarize the workflow in the description.** If the description contains process steps, Claude may follow the summary instead of reading the full skill. Describe what and when, not how.
 - Match specificity to fragility: scripted, low-freedom instructions for error-prone operations (migrations, releases); broad heuristics for judgment tasks (code review).
+
+**Every generated skill body must carry three sections** (this is what makes skills robust under pressure):
+1. **Common Rationalizations** — a `| Thought | Reality |` table of the exact excuses Claude uses to skip the process ("it's just a small change", "tests pass so it's fine"), each paired with a rebuttal. Seed it with the detected stack's footguns.
+2. **Red Flags — STOP** — observable behavioral tells that the skill is being violated.
+3. **Verification** — how to confirm the skill's outcome actually happened (a command to run, an artifact that must exist).
 
 **Keep SKILL.md focused; push detail into reference files (progressive disclosure):**
 - Target ~150 lines for SKILL.md; the hard ceiling is 500. The full body loads on every invocation, so length is a running cost.
@@ -261,6 +270,8 @@ Split the settings into a committed file and a personal file. This mirrors how r
 - A `PreToolUse` command hook controls the call via `hookSpecificOutput`, NOT a top-level `decision` field. The legacy `{"decision": "allow"|"block"}` shape does NOT work for `PreToolUse`.
 - To **block**: emit `{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny", "permissionDecisionReason": "<why>"}}`. Valid `permissionDecision` values: `allow`, `deny`, `ask`, `defer`.
 - To **allow silently** (the common case): print nothing and `exit 0`. Don't emit an "allow" object on the happy path — silence already lets the call proceed through the normal permission flow.
+- Use the `"if"` field on a hook entry (e.g. `"if": "Bash(git *)"`) to scope a hook to matching tool arguments instead of running it on every Bash call — cheaper and fewer false positives than regex-matching inside the script.
+- Newer hook types exist (`"type": "prompt"` for single-turn LLM evaluation, `"type": "agent"` for multi-turn judgment, `"type": "http"`). For SAFETY gates, still generate deterministic `command` hooks only — an LLM-in-the-loop safety check can be argued out of its job. Prompt/agent hooks are fine for advisory checks (e.g. "does this commit message match the convention?") if the user asks for them.
 - Optionally, add an opt-in TDD enforcement hook from `templates/hooks/tdd-guard.md` (references [nizos/tdd-guard](https://github.com/nizos/tdd-guard)) for teams that want a hard test-first gate, not just the instruction-level `/tdd` skill.
 
 ### 2f. Output styles (`.claude/output-styles/`)
@@ -281,6 +292,14 @@ If a monorepo is detected:
 - For complex packages (>20 source files or their own API surface), generate per-package `ARCHITECTURE.md` covering that package's internal architecture
 - Scope rules to specific packages via `paths:` frontmatter
 - Each package's CLAUDE.md should reference the root with `@../../CLAUDE.md`
+
+### 2g-2. docs/definition-of-done.md
+
+Generate a standing, project-wide "Definition of Done" at `docs/definition-of-done.md` — the fixed quality gate that complements per-task acceptance criteria (acceptance criteria answer "did we build the right thing?"; DoD answers "is it ready?").
+
+Structure: short checklists under **Correctness** (tests pass, edge cases covered), **Quality** (lint clean, no debug artifacts, follows conventions), **Integration** (full suite passes, no broken imports), **Documentation** (CLAUDE.md/README updated if commands or architecture changed). Populate each from the ACTUAL detected stack — real commands, real linter, real conventions. Keep it under 40 lines.
+
+Wire it in: the `verify` and `finish` skills must reference it as their final gate ("run through docs/definition-of-done.md before landing").
 
 ### 2h. .gitignore additions
 Ensure the following are gitignored:

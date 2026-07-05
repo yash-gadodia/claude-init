@@ -62,6 +62,21 @@ For each changed file, check:
 - Tests assert exact expected values, not ranges?
 - Test names describe behavior?
 
+### Severity taxonomy
+
+Label every finding — not all feedback is mandatory, and treating nits as blockers erodes trust in the review:
+
+| Severity | Meaning | Action |
+|----------|---------|--------|
+| **Critical** | Bug, security hole, data loss, spec violation | Blocks approval |
+| **Important** | Wrong pattern, missing test, latent bug | Should fix before merge |
+| **Nit** | Style, naming, minor cleanup | Author may ignore |
+| **FYI** | Informational, no change requested | No action |
+
+**Lead with what matters.** If you have one structural problem and ten nits, the structural problem IS the review. Don't bury it.
+
+**Change size check:** ~100 changed lines reviews well, ~300 is acceptable, ~1000 should be split before review. Flag oversized diffs — and flag refactoring mixed into feature changes (they should be separate commits).
+
 ### Output
 
 ```
@@ -71,13 +86,13 @@ For each changed file, check:
 - [requirement]: ✅ implemented + tested / ❌ missing
 
 ### Code Quality
-**Critical** (must fix):
+**Critical** (blocks approval):
 - [file:line] Description. Fix: ...
 
 **Important** (should fix):
 - [file:line] Description. Fix: ...
 
-**Suggestions** (consider):
+**Nit** (author may ignore):
 - [file:line] Description.
 
 ### Verdict: APPROVE / REQUEST CHANGES

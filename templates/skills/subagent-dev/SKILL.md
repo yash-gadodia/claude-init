@@ -46,6 +46,9 @@ For each task:
      - The task spec
      - The git diff of changes made
      - Question: "Does this implementation match the spec? Missing anything? Added anything not requested?"
+     - WITHHOLD the implementer's summary and conclusions — spec + diff only.
+       Handing the reviewer the claim ("done, all tests pass") biases it toward
+       agreement. Fresh eyes on raw evidence.
 
   d. If spec review fails → implementer fixes → spec review again
 
@@ -90,6 +93,7 @@ Use the least powerful model that handles each role:
 - **Spec compliance before code quality** — wrong order wastes time reviewing code that doesn't meet spec
 - **Never dispatch parallel implementation subagents** — they'll conflict on shared files
 - **Don't make subagents read the full plan** — provide only the relevant task text
+- **Don't pass the implementer's claims to reviewers** — artifact + spec only, never the conclusion
 - **Fix issues before moving on** — reviewer found problems = implementer fixes = reviewer re-reviews
 - **Never start on main/master** — create a feature branch first
 

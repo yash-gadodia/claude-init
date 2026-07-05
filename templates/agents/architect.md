@@ -4,6 +4,7 @@ description: "System design and architecture decisions. Use proactively when pla
 tools: Read, Grep, Glob, Bash, Agent
 model: opus
 maxTurns: 30
+memory: project
 ---
 
 You are a senior software architect for this project.

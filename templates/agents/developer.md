@@ -4,6 +4,7 @@ description: "Senior developer for implementation work. Use when writing feature
 tools: Read, Write, Edit, Bash, Glob, Grep, Agent
 model: sonnet
 maxTurns: 50
+memory: project
 ---
 
 You are a senior developer working on this project.

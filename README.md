@@ -61,6 +61,13 @@ After setup, Claude automatically follows a development workflow (clarify → pl
 | `/update` | After your codebase evolves — refresh config |
 | `/doctor` | Validate your `.claude/` setup |
 
+**Or install as a plugin (from inside Claude Code):**
+
+```
+/plugin marketplace add yash-gadodia/claude-init
+/plugin install claude-init@claude-init
+```
+
 **Or install manually:**
 
 ```bash
@@ -109,6 +116,8 @@ Model-tiered personas that know your stack:
 | `devops` | CI/CD, Docker, deployment, infrastructure | Sonnet | When infra detected |
 | `writer` | Docs, changelogs, PR descriptions | Haiku | When docs needed |
 
+The `architect`, `developer`, and `devops` agents ship with `memory: project` so learnings persist across sessions. Model tiers are defaults — `model: inherit` (use the session's model) is generated where difficulty tracks the conversation, and any alias (`opus`, `sonnet`, `haiku`, `fable`) or full model ID works.
+
 ### Skills
 
 Auto-triggered by the workflow rule — Claude follows these automatically, scaled to task complexity. Users can also invoke manually.
@@ -123,6 +132,8 @@ Auto-triggered by the workflow rule — Claude follows these automatically, scal
 | `/subagent-dev` | Fresh subagent per task + two-stage review | Always |
 | `/finish` | Land work: verify → merge/PR/keep/discard | Always |
 | `/devils-advocate` | Stress-test a design before shipping | When complex project |
+
+Also generated: `docs/definition-of-done.md` — a standing, project-wide "is it ready?" checklist (correctness, quality, integration, docs) built from your actual stack. `/verify` and `/finish` use it as their final gate; per-task acceptance criteria answer "did we build the right thing?", the DoD answers "is it ready to land?".
 
 ### Rules
 
@@ -168,7 +179,11 @@ Analyzes and tailors config for:
 
 **Auto-triggered workflow** — Generated `workflow.md` rule makes Claude automatically follow clarify → plan → TDD → verify → review → finish, scaled to task size. No slash commands needed.
 
-**Rationalization prevention** — Every skill includes "Red Flags — STOP" tables listing the exact thoughts that signal an agent is about to skip process discipline. Inspired by [obra/superpowers](https://github.com/obra/superpowers).
+**Rationalization prevention** — Every skill carries the triad: a **Common Rationalizations** table (`| Thought | Reality |` — the exact excuses an agent uses to skip discipline, each pre-rebutted), **Red Flags — STOP** (observable tells the skill is being violated), and a **Verification** step. Inspired by [obra/superpowers](https://github.com/obra/superpowers) and [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills).
+
+**Unbiased subagent review** — When a reviewer subagent is dispatched, it gets the spec and the diff — never the implementer's own conclusion. Handing a reviewer the claim ("done, tests pass") biases it toward agreement; fresh eyes get raw evidence only.
+
+**Review severity taxonomy** — Generated reviews label every finding Critical / Important / Nit / FYI, so nits can't masquerade as blockers, plus change-sizing guidance (~100 lines reviews well, ~1000 should be split).
 
 **Spec persistence** — The clarify skill saves specs to `docs/specs/`, dispatches a reviewer subagent, and gates on user approval before planning. Specs become artifacts that plans trace back to.
 
@@ -182,7 +197,7 @@ Analyzes and tailors config for:
 
 **AGENTS.md interop** — If the target repo already has an `AGENTS.md` for other coding agents, `/claude-init` symlinks rather than duplicates, so every tool reads one source of truth.
 
-**Model-tiered agents** — Opus for architecture. Sonnet for implementation and review. Haiku for exploration and docs. Templates use model aliases (`opus`/`sonnet`/`haiku`), so they track the current generation automatically.
+**Model-tiered agents** — Opus for architecture. Sonnet for implementation and review. Haiku for exploration and docs. Templates use model aliases (`opus`/`sonnet`/`haiku`), so they track the current generation automatically — and `model: inherit` where the task's difficulty tracks the session. Agents that benefit from cross-session learning get `memory: project`.
 
 **RALPH loop** — Developer agent uses Read-Act-Log-Pause-Hallucination-check for self-correction.
 
@@ -198,6 +213,7 @@ Analyzes and tailors config for:
 | `templates/ci/claude-test.yml` | GitHub Actions workflow to run tests on PRs (auto-detects package manager) |
 | `templates/hooks/tdd-guard.md` | Optional hard test-first enforcement hook (wraps [nizos/tdd-guard](https://github.com/nizos/tdd-guard)) |
 | `.claude-plugin/plugin.json` | Plugin manifest — installable via Claude Code's plugin system |
+| `.claude-plugin/marketplace.json` | Marketplace manifest — `/plugin marketplace add yash-gadodia/claude-init` |
 | `scripts/install.sh` | One-command global installer |
 
 ## Self-Learning Loop
@@ -231,6 +247,7 @@ People and projects that shaped this:
 - [obra/superpowers](https://github.com/obra/superpowers) — rationalization prevention, spec review loops, TDD discipline, subagent status protocol, finish workflow, progressive disclosure
 - [snarktank/ralph](https://github.com/snarktank/ralph) — RALPH autonomous loop
 - [nizos/tdd-guard](https://github.com/nizos/tdd-guard) — hook-level test-first enforcement (optional template)
+- [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) — rationalization/reality tables, review severity taxonomy, definition-of-done as a standing artifact, withhold-the-claim subagent review, skill-description discipline (≤1024 chars, never summarize the workflow)
 - [Anthropic's official skill & hook docs](https://code.claude.com/docs/en/skills) — progressive disclosure, third-person trigger descriptions, the `hookSpecificOutput` decision schema
 
 ## License

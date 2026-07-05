@@ -20,16 +20,20 @@ Run diagnostics on the `.claude/` configuration and report issues.
 ### 2. Agents
 For each `.claude/agents/*.md`:
 - [ ] Valid YAML frontmatter (name, description present)
-- [ ] Model is valid (opus, sonnet, haiku, or a full model ID)
+- [ ] Model is valid (`opus`, `sonnet`, `haiku`, `fable`, `inherit`, or a full model ID)
 - [ ] Referenced tools exist
-- [ ] `background` / `persistent-memory` are booleans if present
+- [ ] `background` is a boolean and `memory` is one of `user`/`project`/`local` if present
 - [ ] No empty markdown body
 
 ### 3. Skills
 For each `.claude/skills/*/SKILL.md`:
 - [ ] Valid YAML frontmatter
+- [ ] `name` matches the skill's directory name and is lowercase-kebab-case
 - [ ] Description is specific enough (not just "does stuff")
 - [ ] Description is third-person and contains a when-to-use trigger (`Use when…`, `Use before…`, or `Auto-triggered…`) — descriptions with no trigger won't reliably fire
+- [ ] Description is ≤1024 characters
+- [ ] Description does NOT summarize the workflow steps — a process summary in the description makes Claude follow the summary instead of reading the skill
+- [ ] Skill body has `Red Flags` / rationalization-rebuttal content and a verification step (the generated skills should all carry these)
 - [ ] SKILL.md body is under 500 lines (warn over ~150 — push long examples/scripts into sibling reference files)
 - [ ] If `context: fork`, verify no Task/Skill tool references in body (forked skills can't spawn subagents)
 - [ ] If `paths:` frontmatter exists, verify globs match at least one file (dead scopes = skill never loads)
