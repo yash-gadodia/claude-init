@@ -28,3 +28,4 @@ jobs:
             --model claude-sonnet-5
             --max-turns 80
             --allowedTools "Bash,Read,Write,Edit,MultiEdit,Grep,Glob,WebFetch,WebSearch"
+            --permission-mode bypassPermissions
