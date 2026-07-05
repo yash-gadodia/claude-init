@@ -25,7 +25,7 @@ jobs:
             Read .github/prompts/self-learn.md and follow it exactly.
             Today's date: run `date -u +%Y-%m-%d` to get it.
           claude_args: |
-            --model claude-sonnet-5
+            --model claude-haiku-4-5-20251001
             --max-turns 80
             --allowedTools "Bash,Read,Write,Edit,MultiEdit,Grep,Glob,WebFetch,WebSearch"
             --permission-mode bypassPermissions
