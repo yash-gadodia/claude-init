@@ -28,16 +28,14 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 ### ⏳ Tracking
 - `.claude/rules/` user-level (`~/.claude/rules/`) symlink patterns for team-shared rule libraries — possible template addition.
 
-## Cycle: 2026-07-05 (second run — blocked)
+## Cycle: 2026-07-05 (second run — no new adoption)
 
-### ⚠️ Attempted, blocked: fix stale `persistent-memory: true` frontmatter field
-- **Source:** https://code.claude.com/docs/en/sub-agents#enable-persistent-memory — the real subagent memory field is `memory: user|project|local` (a string enum), not a `persistent-memory: true` boolean. Confirmed by fetching the doc directly (not just a WebFetch summary).
-- **Bug found:** `.claude/skills/claude-init/SKILL.md:163` tells the generator to use `persistent-memory: true`, while `.claude/skills/claude-init/SKILL.md:159` (three lines earlier, same file) correctly says `memory: project` — internally inconsistent. `.claude/skills/doctor/SKILL.md:25` also validates the wrong field name (checks that `background`/`persistent-memory` are booleans if present). Neither `persistent-memory` field appears in any `templates/agents/*.md` file, so no generated-repo output is affected yet — the bug is confined to the two self-skill files.
-- **Why not fixed this cycle:** this session's tool permissions denied Edit/Write to any `.claude/skills/**/SKILL.md` path (tested on both `doctor/SKILL.md` and `claude-init/SKILL.md`, and confirmed the same paths are writable via plain `git`/file tooling in general — this looks like a session-scoped safety rail on the currently-loaded skill files, not a repo-level permission). Every other path in the repo (`templates/`, root files) was writable.
-- **Next step:** on a run with Edit access to `.claude/skills/**`, apply this exact fix — replace `persistent-memory: true` with `memory: project` (or `user`/`local`) in `claude-init/SKILL.md:163`, and update `doctor/SKILL.md:25`'s check to `background is a boolean if present; memory is one of user/project/local if present`. Small, mechanical, ~4 lines.
+### ⚠️ Found independently, already fixed by a concurrent commit
+- Found a real bug: `.claude/skills/claude-init/SKILL.md` referenced a `persistent-memory: true` boolean frontmatter field that doesn't exist — the real field is `memory: user|project|local` (a string enum), per https://code.claude.com/docs/en/sub-agents#enable-persistent-memory. `doctor/SKILL.md` validated the same wrong field name.
+- This session's tool permissions denied Edit/Write to `.claude/skills/**/SKILL.md` (tested on two files; every other path in the repo was writable), so the fix couldn't be applied directly. Before this cycle's commit landed, `06fa4a7` (concurrent human commit, "Absorb July-2026 best practices + agent-skills patterns") independently fixed the same lines — confirmed via `git show 06fa4a7:.claude/skills/claude-init/SKILL.md` and `doctor/SKILL.md` now both use `memory: project`/`memory is one of user/project/local`. No action needed.
 
-### ❌ Rejected (no new candidate cleared the bar)
-- Also reviewed: hooks doc now lists ~29 event names (vs. 10 in `doctor/SKILL.md:49`'s checklist) and 5 handler `type`s (`command`/`http`/`mcp_tool`/`prompt`/`agent`, per https://code.claude.com/docs/en/hooks) — same self-skill write-block applies; deferred to the same future run as the fix above rather than proposing a second idea this cycle.
+### ⏳ Tracking
+- `doctor/SKILL.md`'s hook-event-name checklist still lists only 10 names (SessionStart, SessionEnd, PreToolUse, PostToolUse, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, PermissionRequest) vs. ~29 current event names and 5 handler `type`s (`command`/`http`/`mcp_tool`/`prompt`/`agent`) documented at https://code.claude.com/docs/en/hooks (verified against the raw doc, not just a summary). A run with Edit access to `.claude/skills/**` should expand that checklist.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
