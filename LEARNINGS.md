@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-07-05 |
-| anthropics/skills | 2026-07-05 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-05 |
-| obra/superpowers | 2026-07-05 |
-| trailofbits/claude-code-config | 2026-07-05 |
-| hesreallyhim/awesome-claude-code | 2026-07-05 |
-| VoltAgent/awesome-agent-skills | 2026-07-05 |
+| anthropics/claude-code CHANGELOG | 2026-07-06 |
+| anthropics/skills | 2026-07-06 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-06 |
+| obra/superpowers | 2026-07-06 |
+| trailofbits/claude-code-config | 2026-07-06 |
+| hesreallyhim/awesome-claude-code | 2026-07-06 |
+| VoltAgent/awesome-agent-skills | 2026-07-06 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -36,6 +36,16 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking
 - `doctor/SKILL.md`'s hook-event-name checklist still lists only 10 names (SessionStart, SessionEnd, PreToolUse, PostToolUse, UserPromptSubmit, Stop, SubagentStop, PreCompact, Notification, PermissionRequest) vs. ~29 current event names and 5 handler `type`s (`command`/`http`/`mcp_tool`/`prompt`/`agent`) documented at https://code.claude.com/docs/en/hooks (verified against the raw doc, not just a summary). A run with Edit access to `.claude/skills/**` should expand that checklist.
+
+## Cycle: 2026-07-06
+
+### ✅ Adopted: expand doctor's hook event/handler-type checklist
+- **Source:** https://code.claude.com/docs/en/hooks (fetched fresh, not summarized)
+- **Changes:** `.claude/skills/doctor/SKILL.md` Check 5 previously listed only 10 hook event names; the docs now list 30 (SessionStart, SessionEnd, Setup, UserPromptSubmit, UserPromptExpansion, PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, PostToolBatch, Notification, MessageDisplay, SubagentStart, SubagentStop, TaskCreated, TaskCompleted, Stop, StopFailure, TeammateIdle, InstructionsLoaded, ConfigChange, CwdChanged, FileChanged, WorktreeCreate, WorktreeRemove, PreCompact, PostCompact, Elicitation, ElicitationResult). Updated the checklist to the full list and added a new check that hook handler `type` is present and one of `command`/`http`/`mcp_tool`/`prompt`/`agent` (confirmed via the docs' handler-fields table that `type` is a required field with no default — this closes out the prior cycle's tracking item). `templates/hooks/settings.json` was already spot-checked and every handler already specifies `type` correctly, so no template change was needed there.
+- **Note:** Edit access to `.claude/skills/**/SKILL.md` was available this run (unlike the prior cycle where it was denied).
+
+### ⏳ Tracking
+- `.claude/rules/` user-level (`~/.claude/rules/`) symlink patterns for team-shared rule libraries — possible template addition (carried over, not yet actioned).
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
