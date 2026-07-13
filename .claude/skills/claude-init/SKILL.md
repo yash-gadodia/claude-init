@@ -133,6 +133,8 @@ Generate at the repo root. Must include:
   - "Delegate verbose operations (test runs, log analysis) to subagents to preserve context"
 - **Do NOT section**: Stack-specific anti-patterns
 
+Do NOT restate content Claude can derive by reading the codebase itself — full dependency/version lists already in package.json/Cargo.toml/etc., directory trees `ls` would show, or verbatim README paragraphs. Every line must save Claude a lookup or encode tribal knowledge it can't get elsewhere (Claude Code's own `/doctor` flags exactly this anti-pattern in checked-in CLAUDE.md files as of 2.1.206).
+
 Keep it under 80 lines. Every line must earn its place.
 
 Include this line in the CLAUDE.md: `Read ARCHITECTURE.md for detailed architecture context before planning or making structural changes.`

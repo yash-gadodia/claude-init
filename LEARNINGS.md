@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-07-06 |
-| anthropics/skills | 2026-07-06 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-06 |
-| obra/superpowers | 2026-07-06 |
-| trailofbits/claude-code-config | 2026-07-06 |
-| hesreallyhim/awesome-claude-code | 2026-07-06 |
-| VoltAgent/awesome-agent-skills | 2026-07-06 |
+| anthropics/claude-code CHANGELOG | 2026-07-13 |
+| anthropics/skills | 2026-07-13 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-13 |
+| obra/superpowers | 2026-07-13 |
+| trailofbits/claude-code-config | 2026-07-13 |
+| hesreallyhim/awesome-claude-code | 2026-07-13 |
+| VoltAgent/awesome-agent-skills | 2026-07-13 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -46,6 +46,16 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking
 - `.claude/rules/` user-level (`~/.claude/rules/`) symlink patterns for team-shared rule libraries — possible template addition (carried over, not yet actioned).
+
+## Cycle: 2026-07-13
+
+### ✅ Adopted: flag CLAUDE.md content that merely restates what's derivable from the codebase
+- **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.206: "Added a `/doctor` check that proposes trimming checked-in `CLAUDE.md` files by cutting content Claude could derive from the codebase"
+- **Changes:** Claude Code's own `/doctor` now polices exactly the anti-pattern claude-init's generator and doctor skill exist to prevent, so both were updated to match: `.claude/skills/claude-init/SKILL.md` (2a. CLAUDE.md) now explicitly tells the generator not to restate dependency/version lists, directory trees, or verbatim README content; `.claude/skills/doctor/SKILL.md` Check 1 gained a matching checklist item to flag such content in already-generated CLAUDE.md files. Reinforces the existing "under 80 lines, every line earns its place" rule with a concrete, citable failure mode rather than adding a new principle.
+- **Rejected (same cycle):** Codex-portal packaging work in `obra/superpowers` (2026-06-30/07-02 commits) — cross-tool (Codex, not Claude Code) packaging concerns, out of scope for a Claude Code-focused generator. `trailofbits/claude-code-config` and `VoltAgent/awesome-agent-skills` had no commits since last check with a citable, in-scope idea (VoltAgent's activity is all community skill submissions to their catalog, not methodology/pattern changes).
+
+### ⏳ Tracking (carried over)
+- `.claude/rules/` user-level (`~/.claude/rules/`) symlink patterns for team-shared rule libraries — possible template addition, not yet actioned across three cycles.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 

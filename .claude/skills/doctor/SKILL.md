@@ -16,6 +16,7 @@ Run diagnostics on the `.claude/` configuration and report issues.
 - [ ] All `@import` paths resolve to existing files
 - [ ] Commands section: verify each command actually runs (e.g., `npm test --help`, `cargo test -- --help`)
 - [ ] No placeholder text left from templates (e.g., `<your-framework-here>`)
+- [ ] No content that merely restates what Claude could derive by reading the codebase (full dependency/version lists duplicating package.json, directory trees `ls` would show, verbatim README paragraphs) — flag for trimming, matching Claude Code's own `/doctor` CLAUDE.md-trimming check (changelog 2.1.206)
 
 ### 2. Agents
 For each `.claude/agents/*.md`:
