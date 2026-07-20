@@ -47,6 +47,7 @@ For each `.claude/rules/*.md`:
 - [ ] If `paths:` frontmatter exists, verify those glob patterns match at least one file
 - [ ] No duplicate rules across files
 - [ ] Content is actionable (not just "write good code")
+- [ ] No dangling symlinks under `.claude/rules/` — `find .claude/rules -xtype l` should return nothing (shared rule libraries are linked in via symlink; a broken link silently drops those rules from context)
 
 ### 5. Hooks
 Read `.claude/settings.json`:

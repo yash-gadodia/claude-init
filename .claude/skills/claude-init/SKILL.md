@@ -187,6 +187,13 @@ Conditionally generate (only if project-specific content found):
 
 **When updating existing rules (via `/update`):** Never remove project-specific information that was already there. If the existing rule says "React Query staleTime is 5 minutes", keep it — that's a real project detail Claude can't infer. You may restructure, clarify, or add to existing rules, but don't drop specific values, thresholds, or patterns.
 
+**Team-shared rule libraries:** `.claude/rules/` supports symlinks (resolved normally, circular links detected and handled), so an org with a standards repo used across multiple projects can link it in instead of copying:
+```bash
+ln -s ~/shared-claude-rules .claude/rules/shared
+ln -s ~/company-standards/security.md .claude/rules/security.md
+```
+Separately, `~/.claude/rules/` holds personal rules that apply to every project on the machine (loaded before project rules, so project rules win on conflict) — the right place for an individual's cross-project preferences, distinct from the team-shared symlink case above. Only mention or set these up if the user's setup implies multi-repo rule sharing or personal cross-project rules already exist — never generate symlinks speculatively.
+
 ### 2d. Skills (`.claude/skills/`)
 
 Skills are detailed playbooks for specific development activities. They are **auto-triggered by the `workflow.md` rule** — Claude follows the development workflow automatically without the user typing slash commands. Users CAN still invoke them manually (e.g., `/plan` to force just a planning step), but the default is automatic.

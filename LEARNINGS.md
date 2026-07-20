@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-07-13 |
-| anthropics/skills | 2026-07-13 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-13 |
-| obra/superpowers | 2026-07-13 |
-| trailofbits/claude-code-config | 2026-07-13 |
-| hesreallyhim/awesome-claude-code | 2026-07-13 |
-| VoltAgent/awesome-agent-skills | 2026-07-13 |
+| anthropics/claude-code CHANGELOG | 2026-07-20 |
+| anthropics/skills | 2026-07-20 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-20 |
+| obra/superpowers | 2026-07-20 |
+| trailofbits/claude-code-config | 2026-07-20 |
+| hesreallyhim/awesome-claude-code | 2026-07-20 |
+| VoltAgent/awesome-agent-skills | 2026-07-20 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -56,6 +56,14 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking (carried over)
 - `.claude/rules/` user-level (`~/.claude/rules/`) symlink patterns for team-shared rule libraries — possible template addition, not yet actioned across three cycles.
+
+## Cycle: 2026-07-20
+
+### ✅ Adopted: document `.claude/rules/` symlink sharing + user-level rules
+- **Source:** https://code.claude.com/docs/en/memory (fetched fresh 2026-07-20) — "Share rules across projects with symlinks" section: `.claude/rules/` supports symlinks (resolved normally, circular links detected and handled), e.g. `ln -s ~/shared-claude-rules .claude/rules/shared` or `ln -s ~/company-standards/security.md .claude/rules/security.md`; plus a "User-level rules" section documenting `~/.claude/rules/` (personal, every project, loaded before project rules).
+- **Changes:** `.claude/skills/claude-init/SKILL.md` section 2c (Rules) now documents both patterns, gated so the generator only surfaces them when the project's setup implies multi-repo/team rule sharing or existing personal cross-project rules — not generated speculatively. `.claude/skills/doctor/SKILL.md` Check 4 gained a dangling-symlink check (`find .claude/rules -xtype l`) since a broken symlink silently drops those rules from context with no error. This closes out the tracking item carried since the 2026-07-05 cycle (three cycles waiting on an official citable source).
+- **Investigated, no action needed:** CHANGELOG 2.1.215 ("/verify and /code-review skills no longer run automatically; invoke them explicitly") looked like it could undercut claude-init's core "auto-triggered workflow" design principle (`templates/rules/workflow.md`). Confirmed by reading `.claude/skills/claude-init/SKILL.md` section 2d: claude-init's generated skills are auto-triggered by an always-loaded rule file instructing the model to self-direct the pipeline, not by Claude Code's built-in skill-matching auto-invoke (which is what 2.1.215 changed for Anthropic's own bundled `/verify`/`/code-review`). Different mechanism, no template change needed — but worth re-checking if Anthropic publishes guidance discouraging rule-driven auto-triggering generally.
+- **Rejected (same cycle):** anthropics/skills `fa0fa64b` (2026-07-17) added symlink/path-traversal rejection when extracting docx/pptx/xlsx archives — a good hardening pattern, but claude-init doesn't generate any skill that unpacks archives, so there's no template to apply it to. `obra/superpowers`, `trailofbits/claude-code-config`, `VoltAgent/awesome-agent-skills` had zero commits since 2026-07-13. `hesreallyhim/awesome-claude-code` only had new community resource-catalog entries, no methodology/format changes.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
