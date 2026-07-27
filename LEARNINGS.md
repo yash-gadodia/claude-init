@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-07-20 |
-| anthropics/skills | 2026-07-20 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-20 |
-| obra/superpowers | 2026-07-20 |
-| trailofbits/claude-code-config | 2026-07-20 |
-| hesreallyhim/awesome-claude-code | 2026-07-20 |
-| VoltAgent/awesome-agent-skills | 2026-07-20 |
+| anthropics/claude-code CHANGELOG | 2026-07-27 |
+| anthropics/skills | 2026-07-27 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-27 |
+| obra/superpowers | 2026-07-27 |
+| trailofbits/claude-code-config | 2026-07-27 |
+| hesreallyhim/awesome-claude-code | 2026-07-27 |
+| VoltAgent/awesome-agent-skills | 2026-07-27 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -64,6 +64,16 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 - **Changes:** `.claude/skills/claude-init/SKILL.md` section 2c (Rules) now documents both patterns, gated so the generator only surfaces them when the project's setup implies multi-repo/team rule sharing or existing personal cross-project rules — not generated speculatively. `.claude/skills/doctor/SKILL.md` Check 4 gained a dangling-symlink check (`find .claude/rules -xtype l`) since a broken symlink silently drops those rules from context with no error. This closes out the tracking item carried since the 2026-07-05 cycle (three cycles waiting on an official citable source).
 - **Investigated, no action needed:** CHANGELOG 2.1.215 ("/verify and /code-review skills no longer run automatically; invoke them explicitly") looked like it could undercut claude-init's core "auto-triggered workflow" design principle (`templates/rules/workflow.md`). Confirmed by reading `.claude/skills/claude-init/SKILL.md` section 2d: claude-init's generated skills are auto-triggered by an always-loaded rule file instructing the model to self-direct the pipeline, not by Claude Code's built-in skill-matching auto-invoke (which is what 2.1.215 changed for Anthropic's own bundled `/verify`/`/code-review`). Different mechanism, no template change needed — but worth re-checking if Anthropic publishes guidance discouraging rule-driven auto-triggering generally.
 - **Rejected (same cycle):** anthropics/skills `fa0fa64b` (2026-07-17) added symlink/path-traversal rejection when extracting docx/pptx/xlsx archives — a good hardening pattern, but claude-init doesn't generate any skill that unpacks archives, so there's no template to apply it to. `obra/superpowers`, `trailofbits/claude-code-config`, `VoltAgent/awesome-agent-skills` had zero commits since 2026-07-13. `hesreallyhim/awesome-claude-code` only had new community resource-catalog entries, no methodology/format changes.
+
+## Cycle: 2026-07-27
+
+### ✅ Adopted: pin `background` explicitly on `context: fork` skills
+- **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.218: "Changed skills with `context: fork` to run in the background by default; opt out per skill with `background: false`"
+- **Changes:** `templates/skills/devils-advocate/SKILL.md` uses `context: fork` and had no `background` field, so this Claude Code version bump silently turned it from blocking into a background task — a bad fit for a skill meant to gate a decision the user is about to make ("Use before committing to an architecture or shipping a major change"). Added `background: false` to pin the intended blocking behavior regardless of platform default changes. `.claude/skills/claude-init/SKILL.md` section 2d now tells the generator to always set `background` explicitly on any `context: fork` skill it creates (`false` for decision-gating skills, `true` for fire-and-forget research), instead of relying on the platform default. `.claude/skills/doctor/SKILL.md` Check 3 gained a matching check so already-generated configs get flagged if they omit the field.
+- **Rejected (same cycle):** 2.1.218's "boolean frontmatter fields now also accept `yes`/`no`/`on`/`off`/`1`/`0` case-insensitive" — doctor's existing "`background` is a boolean" check already accepts any YAML-parsed boolean value rather than string-matching `true`/`false`, so no template change was needed. `anthropics/skills` had no new commits since 07-17 (already evaluated last cycle). `obra/superpowers` v6.2.0 (SDD lifecycle restructure, skills-compression sweep) and `trailofbits/claude-code-config` (dormant since 2026-02) had no citable idea that changes a claude-init *generated* config. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was all automated ticker updates / community skill-catalog submissions, no methodology changes.
+
+### ⏳ Tracking
+- 2.1.219's `workflowSizeGuideline` settings key (advisory cap on dynamic-workflow agent count) — claude-init doesn't currently generate any `workflowSizeGuideline` default into `templates/hooks/settings.json`; revisit once there's a concrete signal that generated-repo users hit unbounded dynamic workflows without it.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 

@@ -37,6 +37,7 @@ For each `.claude/skills/*/SKILL.md`:
 - [ ] Skill body has `Red Flags` / rationalization-rebuttal content and a verification step (the generated skills should all carry these)
 - [ ] SKILL.md body is under 500 lines (warn over ~150 — push long examples/scripts into sibling reference files)
 - [ ] If `context: fork`, verify no Task/Skill tool references in body (forked skills can't spawn subagents)
+- [ ] If `context: fork`, verify `background` is explicitly set (`true` or `false`) rather than omitted — since Claude Code 2.1.218 these skills default to running in the background, so an omitted field means a Claude Code upgrade can silently change the skill from blocking to backgrounded
 - [ ] If `paths:` frontmatter exists, verify globs match at least one file (dead scopes = skill never loads)
 - [ ] `allowed-tools` uses real tool names (Read, Edit, Write, Bash, Grep, Glob, Agent — not Tool, File, etc.)
 - [ ] Any `` !`cmd` `` or ```` ```! ```` shell-preprocessing blocks run read-only commands only (never `rm`, `curl http://...`, writes, or long-running ops)

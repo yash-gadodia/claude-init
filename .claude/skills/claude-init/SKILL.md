@@ -251,6 +251,8 @@ allowed-tools: Read, Grep, Glob
 
 Use dynamic shell context where it helps — `` !`git diff --stat` `` in review/verify preloads fresh state without a tool-call round-trip. Do NOT use `` !`cmd` `` for commands that write, delete, or take long to run.
 
+**`context: fork` skills must set `background` explicitly.** Since Claude Code 2.1.218, skills with `context: fork` run in the background by default (opt out with `background: false`) — a Claude Code version bump silently changes any generated skill that omits the field. Decide the right value at generation time instead of inheriting the default: `background: false` for skills that gate a decision the user is waiting on (e.g. devils-advocate, used right before committing to a plan), `background: true` for skills whose output the user will check on later (long research/exploration). Always write the field, don't rely on the platform default.
+
 ### 2e. Settings and hooks (two-tier split)
 
 Split the settings into a committed file and a personal file. This mirrors how real teams actually use Claude Code: everyone shares the safety net, each dev adds their own approve-without-prompting shortcuts.

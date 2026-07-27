@@ -4,6 +4,7 @@ description: "Challenge a plan, design, or PR by finding every flaw, risk, and w
 argument-hint: "[plan or design to challenge]"
 allowed-tools: Read, Grep, Glob
 context: fork
+background: false
 model: opus
 ---
 
