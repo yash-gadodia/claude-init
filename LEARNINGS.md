@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-07-27 |
-| anthropics/skills | 2026-07-27 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-07-27 |
-| obra/superpowers | 2026-07-27 |
-| trailofbits/claude-code-config | 2026-07-27 |
-| hesreallyhim/awesome-claude-code | 2026-07-27 |
-| VoltAgent/awesome-agent-skills | 2026-07-27 |
+| anthropics/claude-code CHANGELOG | 2026-08-03 |
+| anthropics/skills | 2026-08-03 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-03 |
+| obra/superpowers | 2026-08-03 |
+| trailofbits/claude-code-config | 2026-08-03 |
+| hesreallyhim/awesome-claude-code | 2026-08-03 |
+| VoltAgent/awesome-agent-skills | 2026-08-03 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -74,6 +74,14 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking
 - 2.1.219's `workflowSizeGuideline` settings key (advisory cap on dynamic-workflow agent count) — claude-init doesn't currently generate any `workflowSizeGuideline` default into `templates/hooks/settings.json`; revisit once there's a concrete signal that generated-repo users hit unbounded dynamic workflows without it.
+
+## Cycle: 2026-08-03 (no new adoption)
+
+### ⏳ Tracking item resolved: `workflowSizeGuideline` (no template action needed)
+- **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.219: "Changed dynamic workflows to default to a medium size guideline (aim for fewer than 15 agents); pick another size or unrestricted with Dynamic workflow size in `/config`" and "Added the current default workflow size to the running-workflow status line".
+- **Resolution:** the 2026-07-27 cycle's tracking item asked to revisit `workflowSizeGuideline` "once there's a concrete signal that generated-repo users hit unbounded dynamic workflows without it." 2.1.219 confirms the platform now ships a sane "medium" default globally rather than leaving it unrestricted, so there's nothing for claude-init's templates to add — generating an explicit `workflowSizeGuideline` value into `templates/hooks/settings.json` would just restate the platform default. Closing this tracking item with no template change, consistent with the "don't generate speculative config" principle applied to the 2026-07-05 agent-teams rejection.
+- **Investigated, no action needed:** v2.1.217–2.1.219 also documented three separate subagent-spawn limits (session cap 200, concurrent cap 20, nesting depth default raised 1→3) and an `Agent(agent_type)` allowlist syntax for restricting which subagent types can be spawned (https://code.claude.com/docs/en/sub-agents, fetched fresh). Checked whether this should tighten `templates/agents/developer.md` and `architect.md`, which both grant unrestricted `Agent` in their `tools` list — but the docs explicitly state the `Agent(agent_type)` allowlist syntax "applies only to an agent running as the main thread with `claude --agent`"; in a subagent definition (which is what these templates are), "any type list inside the parentheses is ignored." So scoping the templates' `Agent` grant would have no effect. No change made.
+- **Rejected (same cycle):** no other candidate cleared the bar. `anthropics/skills` had zero commits since 2026-07-27. `obra/superpowers` only removed a README section. `trailofbits/claude-code-config` had zero commits. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker/README updates only.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
