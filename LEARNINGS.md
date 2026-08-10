@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-08-03 |
-| anthropics/skills | 2026-08-03 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-03 |
-| obra/superpowers | 2026-08-03 |
-| trailofbits/claude-code-config | 2026-08-03 |
-| hesreallyhim/awesome-claude-code | 2026-08-03 |
-| VoltAgent/awesome-agent-skills | 2026-08-03 |
+| anthropics/claude-code CHANGELOG | 2026-08-10 |
+| anthropics/skills | 2026-08-10 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-10 |
+| obra/superpowers | 2026-08-10 |
+| trailofbits/claude-code-config | 2026-08-10 |
+| hesreallyhim/awesome-claude-code | 2026-08-10 |
+| VoltAgent/awesome-agent-skills | 2026-08-10 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -82,6 +82,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 - **Resolution:** the 2026-07-27 cycle's tracking item asked to revisit `workflowSizeGuideline` "once there's a concrete signal that generated-repo users hit unbounded dynamic workflows without it." 2.1.219 confirms the platform now ships a sane "medium" default globally rather than leaving it unrestricted, so there's nothing for claude-init's templates to add — generating an explicit `workflowSizeGuideline` value into `templates/hooks/settings.json` would just restate the platform default. Closing this tracking item with no template change, consistent with the "don't generate speculative config" principle applied to the 2026-07-05 agent-teams rejection.
 - **Investigated, no action needed:** v2.1.217–2.1.219 also documented three separate subagent-spawn limits (session cap 200, concurrent cap 20, nesting depth default raised 1→3) and an `Agent(agent_type)` allowlist syntax for restricting which subagent types can be spawned (https://code.claude.com/docs/en/sub-agents, fetched fresh). Checked whether this should tighten `templates/agents/developer.md` and `architect.md`, which both grant unrestricted `Agent` in their `tools` list — but the docs explicitly state the `Agent(agent_type)` allowlist syntax "applies only to an agent running as the main thread with `claude --agent`"; in a subagent definition (which is what these templates are), "any type list inside the parentheses is ignored." So scoping the templates' `Agent` grant would have no effect. No change made.
 - **Rejected (same cycle):** no other candidate cleared the bar. `anthropics/skills` had zero commits since 2026-07-27. `obra/superpowers` only removed a README section. `trailofbits/claude-code-config` had zero commits. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker/README updates only.
+
+## Cycle: 2026-08-10
+
+### ✅ Adopted: add `DirectoryAdded` to doctor's hook event checklist
+- **Source:** https://code.claude.com/docs/en/hooks (fetched fresh 2026-08-10) — the event table now lists 31 hook events, up from the 30 documented at the 2026-07-06 cycle. The new entry: `DirectoryAdded` — "When a working directory is added mid-session via `/add-dir` or the SDK `register_repo_root` control request" (matcher values `slash_command`, `register_repo_root`).
+- **Changes:** `.claude/skills/doctor/SKILL.md` Check 5's hook-event-name list now includes `DirectoryAdded`, so doctor no longer flags a hook using this event as a typo.
+- **Rejected (same cycle):** CHANGELOG 2.1.220–2.1.226 entries (spend-limit messaging, workspace-trust prompts for `claude agents`, macOS keychain/MCP OAuth fixes, Remote Control/SendMessage reliability fixes) are all CLI/runtime behavior, not generated-config surface — no template touches them. `anthropics/skills` commits since 2026-08-03 were all `claude-api` skill updates (Managed Agents launch waves, Opus 5) — that skill isn't part of claude-init's own templates (verified: no `claude-api` references anywhere in this repo), so out of scope. `obra/superpowers` and `trailofbits/claude-code-config` had zero commits since last check. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog submissions only.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
