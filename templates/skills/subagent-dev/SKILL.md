@@ -28,7 +28,7 @@ Fall back to sequential implementation when tasks are tightly coupled or the pla
 
 - **Read the plan file ONCE.** Extract every task with its full text, file paths, and context upfront. When dispatching each subagent, provide the full task text directly — never make the subagent read the plan file itself.
 - Note any cross-task dependencies or shared context
-- Create a task list to track progress
+- Track progress by checking off each task's `- [ ]` in the plan file as it completes — don't rely on TodoWrite/task-tracking tools, which newer models no longer have by default
 
 ### 2. Per Task
 
@@ -58,7 +58,7 @@ For each task:
 
   f. If quality review fails → implementer fixes → quality review again
 
-  g. Mark task complete
+  g. Mark task complete in the plan file
 ```
 
 ### 3. Completion

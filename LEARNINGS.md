@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-08-10 |
-| anthropics/skills | 2026-08-10 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-10 |
-| obra/superpowers | 2026-08-10 |
-| trailofbits/claude-code-config | 2026-08-10 |
-| hesreallyhim/awesome-claude-code | 2026-08-10 |
-| VoltAgent/awesome-agent-skills | 2026-08-10 |
+| anthropics/claude-code CHANGELOG | 2026-08-17 |
+| anthropics/skills | 2026-08-17 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-17 |
+| obra/superpowers | 2026-08-17 |
+| trailofbits/claude-code-config | 2026-08-17 |
+| hesreallyhim/awesome-claude-code | 2026-08-17 |
+| VoltAgent/awesome-agent-skills | 2026-08-17 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -89,6 +89,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 - **Source:** https://code.claude.com/docs/en/hooks (fetched fresh 2026-08-10) — the event table now lists 31 hook events, up from the 30 documented at the 2026-07-06 cycle. The new entry: `DirectoryAdded` — "When a working directory is added mid-session via `/add-dir` or the SDK `register_repo_root` control request" (matcher values `slash_command`, `register_repo_root`).
 - **Changes:** `.claude/skills/doctor/SKILL.md` Check 5's hook-event-name list now includes `DirectoryAdded`, so doctor no longer flags a hook using this event as a typo.
 - **Rejected (same cycle):** CHANGELOG 2.1.220–2.1.226 entries (spend-limit messaging, workspace-trust prompts for `claude agents`, macOS keychain/MCP OAuth fixes, Remote Control/SendMessage reliability fixes) are all CLI/runtime behavior, not generated-config surface — no template touches them. `anthropics/skills` commits since 2026-08-03 were all `claude-api` skill updates (Managed Agents launch waves, Opus 5) — that skill isn't part of claude-init's own templates (verified: no `claude-api` references anywhere in this repo), so out of scope. `obra/superpowers` and `trailofbits/claude-code-config` had zero commits since last check. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog submissions only.
+
+## Cycle: 2026-08-17
+
+### ✅ Adopted: stop `subagent-dev` assuming TodoWrite/task-tracking tools exist
+- **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.233: "Todo/task-tracking tools (TaskCreate/Get/Update/List, TodoWrite) are no longer available on Opus 4.8, Sonnet 5, Fable 5, Mythos 5, and newer models; set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` to bring them back"
+- **Changes:** `templates/skills/subagent-dev/SKILL.md` step 1 said "Create a task list to track progress" and step 2g said "Mark task complete" — both implicitly depended on the TodoWrite-family tools that are now off by default for the newest model tier (which includes this repo's own default models). Since the skill already reads the plan file once at setup and every other generated skill (`plan`, `test`, `review`, `clarify`) already uses `- [ ]` checklists in markdown for durable progress tracking, the fix reuses that existing convention instead of introducing a new mechanism: progress is now tracked by checking off each task's `- [ ]` in the plan file itself, with an explicit note not to rely on TodoWrite/task-tracking tools. Grepped `templates/` and `.claude/skills/**` for `TodoWrite`/`TaskCreate`/task-list language first — `subagent-dev` was the only generated-config surface with this assumption baked in.
+- **Rejected (same cycle):** 2.1.229's sandbox IPv6-literal bracketing/fail-closed enforcement for network domain lists — `templates/hooks/settings.json` has no `network`/domain-list config to fix (grepped, no matches), so there's nothing to update. 2.1.232's "non-teammate agent spawns in interactive sessions now run in the background by default" — checked whether `subagent-dev`'s dispatch-and-wait-for-result flow (implementer → spec review → quality review, each blocking on the prior) assumes foreground execution; the skill already prescribes a strict sequential dependency chain per task (never parallel implementers), which reads as an explicit override of any ambient default rather than something the changelog entry breaks. `anthropics/skills` commits since 08-10 were `claude-api` skill updates only (prompt-audit subcommand) — out of scope, same reasoning as prior cycles. `obra/superpowers` v6.3.0 (Devin CLI/Hermes Agent support, brainstorming router) is cross-tool/feature work with no claude-init-applicable pattern. `trailofbits/claude-code-config`'s one new commit (Rust `match` guidance clarification in their CLAUDE.md template) is language-specific content outside claude-init's stack-agnostic template scope. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` had no commits since last check.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
