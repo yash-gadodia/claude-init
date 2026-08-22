@@ -1,3 +1,5 @@
+
+
 <p align="center">
   <h1 align="center">claude-init</h1>
   <p align="center">Make any repo AI-native in one command.</p>
@@ -232,7 +234,7 @@ The repo ships a zero-dependency test suite that validates its own templates, sk
 bash tests/run.sh
 ```
 
-No dependencies are required; `python3`/`node` are used only for JSON validation when present. CI runs the suite on every push and PR via `.github/workflows/test.yml`.
+No dependencies are required; `python3`/`node` are used only for JSON validation when present. CI runs the suite on every push to `main` and on PRs via `.github/workflows/test.yml`.
 
 ## Contributing
 
