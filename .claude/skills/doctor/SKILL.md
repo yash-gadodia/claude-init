@@ -24,6 +24,7 @@ For each `.claude/agents/*.md`:
 - [ ] Model is valid (`opus`, `sonnet`, `haiku`, `fable`, `inherit`, or a full model ID)
 - [ ] Referenced tools exist
 - [ ] `background` is a boolean and `memory` is one of `user`/`project`/`local` if present
+- [ ] `effort` is one of `low`/`medium`/`high`/`xhigh`/`max`, `isolation` is `worktree`, `color` is one of `red`/`blue`/`green`/`yellow`/`purple`/`orange`/`pink`/`cyan`, and `permissionMode` is one of `default`/`acceptEdits`/`auto`/`dontAsk`/`bypassPermissions`/`plan`/`manual` — if present (per https://code.claude.com/docs/en/sub-agents frontmatter table)
 - [ ] No empty markdown body
 
 ### 3. Skills

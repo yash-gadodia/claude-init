@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-08-17 |
-| anthropics/skills | 2026-08-17 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-17 |
-| obra/superpowers | 2026-08-17 |
-| trailofbits/claude-code-config | 2026-08-17 |
-| hesreallyhim/awesome-claude-code | 2026-08-17 |
-| VoltAgent/awesome-agent-skills | 2026-08-17 |
+| anthropics/claude-code CHANGELOG | 2026-08-24 |
+| anthropics/skills | 2026-08-24 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-24 |
+| obra/superpowers | 2026-08-24 |
+| trailofbits/claude-code-config | 2026-08-24 |
+| hesreallyhim/awesome-claude-code | 2026-08-24 |
+| VoltAgent/awesome-agent-skills | 2026-08-24 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -96,6 +96,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 - **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.233: "Todo/task-tracking tools (TaskCreate/Get/Update/List, TodoWrite) are no longer available on Opus 4.8, Sonnet 5, Fable 5, Mythos 5, and newer models; set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` to bring them back"
 - **Changes:** `templates/skills/subagent-dev/SKILL.md` step 1 said "Create a task list to track progress" and step 2g said "Mark task complete" — both implicitly depended on the TodoWrite-family tools that are now off by default for the newest model tier (which includes this repo's own default models). Since the skill already reads the plan file once at setup and every other generated skill (`plan`, `test`, `review`, `clarify`) already uses `- [ ]` checklists in markdown for durable progress tracking, the fix reuses that existing convention instead of introducing a new mechanism: progress is now tracked by checking off each task's `- [ ]` in the plan file itself, with an explicit note not to rely on TodoWrite/task-tracking tools. Grepped `templates/` and `.claude/skills/**` for `TodoWrite`/`TaskCreate`/task-list language first — `subagent-dev` was the only generated-config surface with this assumption baked in.
 - **Rejected (same cycle):** 2.1.229's sandbox IPv6-literal bracketing/fail-closed enforcement for network domain lists — `templates/hooks/settings.json` has no `network`/domain-list config to fix (grepped, no matches), so there's nothing to update. 2.1.232's "non-teammate agent spawns in interactive sessions now run in the background by default" — checked whether `subagent-dev`'s dispatch-and-wait-for-result flow (implementer → spec review → quality review, each blocking on the prior) assumes foreground execution; the skill already prescribes a strict sequential dependency chain per task (never parallel implementers), which reads as an explicit override of any ambient default rather than something the changelog entry breaks. `anthropics/skills` commits since 08-10 were `claude-api` skill updates only (prompt-audit subcommand) — out of scope, same reasoning as prior cycles. `obra/superpowers` v6.3.0 (Devin CLI/Hermes Agent support, brainstorming router) is cross-tool/feature work with no claude-init-applicable pattern. `trailofbits/claude-code-config`'s one new commit (Rust `match` guidance clarification in their CLAUDE.md template) is language-specific content outside claude-init's stack-agnostic template scope. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` had no commits since last check.
+
+## Cycle: 2026-08-24
+
+### ✅ Adopted: validate the newer subagent frontmatter fields in doctor
+- **Source:** https://code.claude.com/docs/en/sub-agents (fetched fresh, verbatim frontmatter table) — the subagent frontmatter table now documents `effort` (`low`/`medium`/`high`/`xhigh`/`max`), `isolation` (`worktree`), `color` (`red`/`blue`/`green`/`yellow`/`purple`/`orange`/`pink`/`cyan`), and `permissionMode` (`default`/`acceptEdits`/`auto`/`dontAsk`/`bypassPermissions`/`plan`/`manual`) fields, none of which doctor's agent checklist validated (it only checked `background`/`memory`, added in earlier cycles).
+- **Changes:** `.claude/skills/doctor/SKILL.md` Check 2 (Agents) gained a line validating these four fields' enum values when present, matching the existing `background`/`memory` check pattern. This closes a gap where doctor would silently accept a typo'd value (e.g. `effort: extreme`) in any hand-edited or generated agent file.
+- **Rejected (same cycle):** `anthropics/skills`' new `discernment-nudge` skill (2026-08-17) — a consumer-facing "should I double check this" UX nudge, out of scope for claude-init's software-engineering-focused generated skills (plan/TDD/review/verify/subagent-dev/finish/clarify). The renamed `academy-guide` skill and the `claude-api` Python 0.x→1.x upgrade-guide update are updates to Anthropic's own bundled skills, not referenced anywhere in claude-init's templates (grepped, no matches) — same out-of-scope reasoning as prior cycles' `claude-api` rejections. CHANGELOG 2.1.239's `claudeMdExcludes` fix for symlinked `.claude/rules` (a bug in a setting claude-init doesn't generate) and 2.1.234's NT-namespace path hardening are runtime/security fixes with no generated-config surface to update. `obra/superpowers` and `trailofbits/claude-code-config` had zero new commits since 2026-08-17 (confirmed via `gh api .../commits` against both dates and pushed_at). `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog submissions only.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
