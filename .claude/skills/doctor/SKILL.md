@@ -54,7 +54,7 @@ For each `.claude/rules/*.md`:
 ### 5. Hooks
 Read `.claude/settings.json`:
 - [ ] Valid JSON (strict — `"//"` comment keys are OK, but trailing commas and JS comments break Claude Code's parser)
-- [ ] Hook event names are real — current set (per https://code.claude.com/docs/en/hooks): SessionStart, SessionEnd, Setup, UserPromptSubmit, UserPromptExpansion, PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, PostToolBatch, Notification, MessageDisplay, SubagentStart, SubagentStop, TaskCreated, TaskCompleted, Stop, StopFailure, TeammateIdle, InstructionsLoaded, ConfigChange, CwdChanged, DirectoryAdded, FileChanged, WorktreeCreate, WorktreeRemove, PreCompact, PostCompact, Elicitation, ElicitationResult — a typo like `preToolUse` or `OnEdit` silently never fires
+- [ ] Hook event names are real — current set (per https://code.claude.com/docs/en/hooks): SessionStart, SessionEnd, Setup, UserPromptSubmit, UserPromptExpansion, PreToolUse, PermissionRequest, PermissionDenied, PostToolUse, PostToolUseFailure, PostToolBatch, Notification, MessageDisplay, SubagentStart, SubagentStop, TaskCreated, TaskCompleted, Stop, StopFailure, TeammateIdle, InstructionsLoaded, ConfigChange, CwdChanged, DirectoryAdded, FileChanged, WorktreeCreate, WorktreeRemove, PreCompact, PostCompact, PreModelSwitch, PostModelSwitch, Elicitation, ElicitationResult — a typo like `preToolUse` or `OnEdit` silently never fires
 - [ ] Hook handler `type` is present and one of `command`, `http`, `mcp_tool`, `prompt`, `agent` (required field — no default)
 - [ ] Hook commands are executable (if `type: command`)
 - [ ] No overly broad matchers that would slow every tool call

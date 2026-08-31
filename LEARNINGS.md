@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-08-24 |
-| anthropics/skills | 2026-08-24 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-24 |
-| obra/superpowers | 2026-08-24 |
-| trailofbits/claude-code-config | 2026-08-24 |
-| hesreallyhim/awesome-claude-code | 2026-08-24 |
-| VoltAgent/awesome-agent-skills | 2026-08-24 |
+| anthropics/claude-code CHANGELOG | 2026-08-31 |
+| anthropics/skills | 2026-08-31 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-31 |
+| obra/superpowers | 2026-08-31 |
+| trailofbits/claude-code-config | 2026-08-31 |
+| hesreallyhim/awesome-claude-code | 2026-08-31 |
+| VoltAgent/awesome-agent-skills | 2026-08-31 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -103,6 +103,16 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 - **Source:** https://code.claude.com/docs/en/sub-agents (fetched fresh, verbatim frontmatter table) — the subagent frontmatter table now documents `effort` (`low`/`medium`/`high`/`xhigh`/`max`), `isolation` (`worktree`), `color` (`red`/`blue`/`green`/`yellow`/`purple`/`orange`/`pink`/`cyan`), and `permissionMode` (`default`/`acceptEdits`/`auto`/`dontAsk`/`bypassPermissions`/`plan`/`manual`) fields, none of which doctor's agent checklist validated (it only checked `background`/`memory`, added in earlier cycles).
 - **Changes:** `.claude/skills/doctor/SKILL.md` Check 2 (Agents) gained a line validating these four fields' enum values when present, matching the existing `background`/`memory` check pattern. This closes a gap where doctor would silently accept a typo'd value (e.g. `effort: extreme`) in any hand-edited or generated agent file.
 - **Rejected (same cycle):** `anthropics/skills`' new `discernment-nudge` skill (2026-08-17) — a consumer-facing "should I double check this" UX nudge, out of scope for claude-init's software-engineering-focused generated skills (plan/TDD/review/verify/subagent-dev/finish/clarify). The renamed `academy-guide` skill and the `claude-api` Python 0.x→1.x upgrade-guide update are updates to Anthropic's own bundled skills, not referenced anywhere in claude-init's templates (grepped, no matches) — same out-of-scope reasoning as prior cycles' `claude-api` rejections. CHANGELOG 2.1.239's `claudeMdExcludes` fix for symlinked `.claude/rules` (a bug in a setting claude-init doesn't generate) and 2.1.234's NT-namespace path hardening are runtime/security fixes with no generated-config surface to update. `obra/superpowers` and `trailofbits/claude-code-config` had zero new commits since 2026-08-17 (confirmed via `gh api .../commits` against both dates and pushed_at). `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog submissions only.
+
+## Cycle: 2026-08-31
+
+### ✅ Adopted: add `PreModelSwitch`/`PostModelSwitch` to doctor's hook event checklist
+- **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.251: "Added `PreModelSwitch` and `PostModelSwitch` hook events (block, confirm, or annotate a model switch); `SessionStart` resume hooks now receive session staleness and the estimated re-cache cost." Cross-checked against https://code.claude.com/docs/en/hooks (fetched fresh 2026-08-31), which confirms 33 hook events, up from the 31 documented at the 2026-08-10 cycle: `PreModelSwitch` fires before a requested model switch and can block it; `PostModelSwitch` fires after the session's model actually changes (including Claude Code's own changes, e.g. restoring the model on resume).
+- **Changes:** `.claude/skills/doctor/SKILL.md` Check 5's hook-event-name list now includes both, so doctor no longer flags a hook using either event as a typo. Same mechanical pattern as the 2026-07-06 and 2026-08-10 cycles' hook-event-list updates.
+- **Rejected (same cycle):** 2.1.248's `experimental.cacheTtl` agent frontmatter field — explicitly experimental per the changelog wording, so per the "never add speculative config for experimental/preview features" guardrail this is a tracking item, not an adoption (see below), not a doctor validation rule. `trailofbits/claude-code-config` PR #60 (merged 2026-08-24, just at the last cycle's boundary) splits its `claude-md-template.md` into path-scoped per-language rules under `rules/` with `paths:` frontmatter — read the diff and confirmed claude-init's generator already produces this exact pattern (`templates/rules/api.md`, `database.md`, `frontend.md` all use `paths:` frontmatter scoping by file glob, predating this PR), so there's nothing new to adopt; the axis differs (trailofbits scopes by language, claude-init by domain) but the underlying mechanism is identical and already dogfooded. `anthropics/skills` and `obra/superpowers` had zero commits since 2026-08-24. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog submissions only.
+
+### ⏳ Tracking
+- 2.1.248's `experimental.cacheTtl` agent frontmatter field (per-agent prompt cache TTL, `"5m"`/`"1h"`) — revisit once it ships out of `experimental.` naming/status, then add to doctor's Check 2 agent-frontmatter validation alongside `background`/`memory`/`effort`/`isolation`/`color`/`permissionMode`.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
