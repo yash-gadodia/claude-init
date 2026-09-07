@@ -43,6 +43,7 @@ For each `.claude/skills/*/SKILL.md`:
 - [ ] `allowed-tools` uses real tool names (Read, Edit, Write, Bash, Grep, Glob, Agent — not Tool, File, etc.)
 - [ ] Any `` !`cmd` `` or ```` ```! ```` shell-preprocessing blocks run read-only commands only (never `rm`, `curl http://...`, writes, or long-running ops)
 - [ ] Referenced scripts in `scripts/` directory exist and are executable
+- [ ] Recommend running Claude Code's native `/skill-doctor` (2.1.261+) as a complementary check — it reports which loaded skills go unused and what they cost in context, which this structural review does not measure
 
 ### 4. Rules
 For each `.claude/rules/*.md`:

@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-08-31 |
-| anthropics/skills | 2026-08-31 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-08-31 |
-| obra/superpowers | 2026-08-31 |
-| trailofbits/claude-code-config | 2026-08-31 |
-| hesreallyhim/awesome-claude-code | 2026-08-31 |
-| VoltAgent/awesome-agent-skills | 2026-08-31 |
+| anthropics/claude-code CHANGELOG | 2026-09-07 |
+| anthropics/skills | 2026-09-07 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-09-07 |
+| obra/superpowers | 2026-09-07 |
+| trailofbits/claude-code-config | 2026-09-07 |
+| hesreallyhim/awesome-claude-code | 2026-09-07 |
+| VoltAgent/awesome-agent-skills | 2026-09-07 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -113,6 +113,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking
 - 2.1.248's `experimental.cacheTtl` agent frontmatter field (per-agent prompt cache TTL, `"5m"`/`"1h"`) — revisit once it ships out of `experimental.` naming/status, then add to doctor's Check 2 agent-frontmatter validation alongside `background`/`memory`/`effort`/`isolation`/`color`/`permissionMode`.
+
+## Cycle: 2026-09-07
+
+### ✅ Adopted: point doctor at native `/skill-doctor` for unused-skill/context-cost auditing
+- **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.261: "Added `/skill-doctor` to show which loaded skills go unused and what they cost in context, so you can prune them."
+- **Changes:** `.claude/skills/doctor/SKILL.md` Check 3 (Skills) gained a line recommending the native `/skill-doctor` command as a complementary check. claude-init's own `doctor` skill validates skill *structure* (frontmatter, description quality, line count) but has no way to measure actual runtime usage or context-token cost — exactly the gap `/skill-doctor` fills natively. This matters more than usual for claude-init-generated repos specifically, since the generator can produce seven or more skills (clarify, plan, test, review, verify, subagent-dev, finish, plus onboard/update/doctor for dogfooded repos) per the "Progressive disclosure" design principle in this repo's own CLAUDE.md — a natural place for skill bloat to accumulate unnoticed.
+- **Rejected (same cycle):** the rest of CHANGELOG 2.1.252–2.1.263 (diff panel, `/advisor` text form, `managedMcpServers`, sandbox/permission-rule fixes, VS Code session-list changes, Fable 5.1 defaults, etc.) are CLI/runtime/IDE behavior with no generated-config template surface. `anthropics/skills` commits since 2026-08-31 (`frontend-design` update, `claude-api` Fable 5.1/Mythos 5.1/Managed Agents update) touch bundled skills not referenced anywhere in claude-init's templates (grepped, no matches) — same out-of-scope reasoning as prior `claude-api` rejections. `obra/superpowers` (last commit 2026-08-12) and `trailofbits/claude-code-config` (last commit 2026-08-24) had zero new commits since their last-evaluated cycles. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog PRs only.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
