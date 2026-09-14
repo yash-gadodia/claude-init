@@ -185,6 +185,8 @@ Conditionally generate (only if project-specific content found):
 
 **The test**: for each rule file, ask "would removing this cause Claude to make a mistake on THIS project?" If no, don't generate it.
 
+**`paths:` scoping trades reload guarantees for context savings.** Per https://code.claude.com/docs/en/memory ("Instructions seem lost after /compact"): after `/compact`, the project-root CLAUDE.md is always re-read and re-injected, but a `paths:`-scoped rule only reloads when Claude subsequently reads a file matching its glob — not automatically. If a rule carries something that must hold no matter what file Claude is touching (a safety-critical constraint, a hard "always/never" rule), put it in CLAUDE.md even if it's project-specific, rather than scoping it with `paths:` for the context savings.
+
 **When updating existing rules (via `/update`):** Never remove project-specific information that was already there. If the existing rule says "React Query staleTime is 5 minutes", keep it — that's a real project detail Claude can't infer. You may restructure, clarify, or add to existing rules, but don't drop specific values, thresholds, or patterns.
 
 **Team-shared rule libraries:** `.claude/rules/` supports symlinks (resolved normally, circular links detected and handled), so an org with a standards repo used across multiple projects can link it in instead of copying:
@@ -337,5 +339,5 @@ After generation:
 - Keep CLAUDE.md under 80 lines. Be ruthless.
 - Every agent must reference actual project patterns, not generic advice.
 - Skills must use the actual test/build/lint commands from the project.
-- Prefer `paths:` scoped rules over global rules.
+- Prefer `paths:` scoped rules over global rules — except for content that must hold unconditionally, which belongs in CLAUDE.md since `paths:` rules don't reliably reload after `/compact`.
 - Use `@imports` in CLAUDE.md to keep it lean (e.g., `@docs/architecture.md`).

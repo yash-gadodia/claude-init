@@ -51,6 +51,7 @@ For each `.claude/rules/*.md`:
 - [ ] No duplicate rules across files
 - [ ] Content is actionable (not just "write good code")
 - [ ] No dangling symlinks under `.claude/rules/` — `find .claude/rules -xtype l` should return nothing (shared rule libraries are linked in via symlink; a broken link silently drops those rules from context)
+- [ ] Any `paths:`-scoped rule that reads like a hard "always/never/must" constraint rather than reference material — flag it for a move to CLAUDE.md. Per https://code.claude.com/docs/en/memory, a `paths:` rule only reloads after `/compact` when Claude next reads a matching file, unlike the project-root CLAUDE.md, which always re-reads and re-injects
 
 ### 5. Hooks
 Read `.claude/settings.json`:

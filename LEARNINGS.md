@@ -6,13 +6,13 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 | Source | Last checked |
 |--------|--------------|
-| anthropics/claude-code CHANGELOG | 2026-09-07 |
-| anthropics/skills | 2026-09-07 |
-| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-09-07 |
-| obra/superpowers | 2026-09-07 |
-| trailofbits/claude-code-config | 2026-09-07 |
-| hesreallyhim/awesome-claude-code | 2026-09-07 |
-| VoltAgent/awesome-agent-skills | 2026-09-07 |
+| anthropics/claude-code CHANGELOG | 2026-09-14 |
+| anthropics/skills | 2026-09-14 |
+| code.claude.com/docs (skills, hooks, sub-agents, plugins, memory) | 2026-09-14 |
+| obra/superpowers | 2026-09-14 |
+| trailofbits/claude-code-config | 2026-09-14 |
+| hesreallyhim/awesome-claude-code | 2026-09-14 |
+| VoltAgent/awesome-agent-skills | 2026-09-14 |
 
 ## Cycle: 2026-07-05 (manual bootstrap)
 
@@ -120,6 +120,16 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 - **Source:** https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md — 2.1.261: "Added `/skill-doctor` to show which loaded skills go unused and what they cost in context, so you can prune them."
 - **Changes:** `.claude/skills/doctor/SKILL.md` Check 3 (Skills) gained a line recommending the native `/skill-doctor` command as a complementary check. claude-init's own `doctor` skill validates skill *structure* (frontmatter, description quality, line count) but has no way to measure actual runtime usage or context-token cost — exactly the gap `/skill-doctor` fills natively. This matters more than usual for claude-init-generated repos specifically, since the generator can produce seven or more skills (clarify, plan, test, review, verify, subagent-dev, finish, plus onboard/update/doctor for dogfooded repos) per the "Progressive disclosure" design principle in this repo's own CLAUDE.md — a natural place for skill bloat to accumulate unnoticed.
 - **Rejected (same cycle):** the rest of CHANGELOG 2.1.252–2.1.263 (diff panel, `/advisor` text form, `managedMcpServers`, sandbox/permission-rule fixes, VS Code session-list changes, Fable 5.1 defaults, etc.) are CLI/runtime/IDE behavior with no generated-config template surface. `anthropics/skills` commits since 2026-08-31 (`frontend-design` update, `claude-api` Fable 5.1/Mythos 5.1/Managed Agents update) touch bundled skills not referenced anywhere in claude-init's templates (grepped, no matches) — same out-of-scope reasoning as prior `claude-api` rejections. `obra/superpowers` (last commit 2026-08-12) and `trailofbits/claude-code-config` (last commit 2026-08-24) had zero new commits since their last-evaluated cycles. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog PRs only.
+
+## Cycle: 2026-09-14
+
+### ✅ Adopted: warn that `paths:`-scoped rules don't reliably reload after `/compact`
+- **Source:** https://code.claude.com/docs/en/memory (fetched fresh 2026-09-14), "Instructions seem lost after /compact" section: "Project-root CLAUDE.md survives compaction: after `/compact`, Claude re-reads it from disk and re-injects it into the session. Nested CLAUDE.md files in subdirectories and rules with `paths:` frontmatter reload as Claude reads files they apply to." — i.e. unlike the project-root CLAUDE.md, a `paths:`-scoped rule is only guaranteed back in context once Claude next touches a matching file post-compaction, not immediately.
+- **Changes:** `.claude/skills/claude-init/SKILL.md` section 2c gained a callout (and the "Rules" design-principles bullet a matching caveat) telling the generator to keep anything that must hold unconditionally (safety-critical constraints, hard "always/never" rules) in CLAUDE.md even when it's project-specific, rather than scoping it with `paths:` purely for context savings — the existing "prefer `paths:` scoped rules over global rules" guidance had no such exception. `.claude/skills/doctor/SKILL.md` Check 4 gained a matching checklist item so already-generated `paths:` rules that read like hard constraints get flagged for a move. Surveyed this repo's own conditionally-generated rule categories (api/database/frontend/performance, all told to scope with `paths:`) — they're descriptive reference material, not safety gates, so no existing template needed to move, but the guidance now prevents a future generation from making that mistake.
+- **Rejected (same cycle):** `trailofbits/claude-code-config` commit `a658b8e` ("Pin subagent spawn depth") adds `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH: "3"` to their personal `~/.claude/settings.json` template, reasoning that the nesting-depth default is delivered by a remote feature flag and could move without a release. Considered adding the same env var to `templates/hooks/settings.json`, but that template is committed to a *project* repo and shared by a whole team, not a personal machine config — pinning a platform-behavior default there for every generated repo restates today's value speculatively rather than fixing a concrete generated-config gap, the same reasoning the 2026-08-03 cycle used to reject a `workflowSizeGuideline` default. Also from the same PR: "Remove self-verification scaffolding per Claude 5 guides" cites no source beyond the maintainer's own opinion ("per Claude 5 guides", no link) — not a citable source per the guardrail. "Drop no-op thinking setting" (`alwaysThinkingEnabled: true` is a no-op on Claude 5) doesn't apply — grepped `templates/hooks/settings.json`, it doesn't set `alwaysThinkingEnabled`. CHANGELOG 2.1.265–2.1.270 had no other generated-config-surface changes (checked in full: prompt-cache/resume fixes, VSCode/web/Slack features, plugin/gateway hardening, `effort:` frontmatter bug fix on pinned-effort models — all runtime behavior or bug fixes, nothing a template controls). `code.claude.com/docs/en/hooks` and `/sub-agents` re-fetched fresh: hook event list still 33 (no new events), subagent frontmatter fields unchanged, `experimental.cacheTtl` still experimental (tracking item from 2026-08-31 not yet actionable). `anthropics/skills` commits since 2026-09-07 were `claude-api`/`frontend-design` updates only — out of scope, same reasoning as prior cycles. `obra/superpowers` (last commit 2026-08-12) and the rest of `trailofbits/claude-code-config`'s PR #60 (path-scoped rules split, output-style docs) had zero new commits or were already evaluated in the 2026-08-31 cycle. `hesreallyhim/awesome-claude-code` and `VoltAgent/awesome-agent-skills` activity was automated ticker updates and community skill-catalog PRs only.
+
+### ⏳ Tracking (carried over)
+- 2.1.248's `experimental.cacheTtl` agent frontmatter field — still explicitly experimental per `/sub-agents` docs as of 2026-09-14; revisit once it ships out of `experimental.` naming/status.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 
