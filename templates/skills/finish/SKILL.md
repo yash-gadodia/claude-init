@@ -41,6 +41,8 @@ Show exactly these four choices:
 3. Run tests again — merges can introduce conflicts that break things
 4. `git branch -d <feature-branch>`
 
+If pushing this branch deploys (a push to the default branch on most hosted apps), the push is a deploy: follow the push-and-watch skill for the confirmation, the watch, and the live check.
+
 **Push & create PR:**
 1. `git push -u origin <feature-branch>`
 2. Create PR via `gh pr create` with summary and test plan sections

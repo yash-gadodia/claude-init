@@ -18,6 +18,9 @@ claude-init is a generator that turns any existing codebase into an AI-native on
 │   ├── skills/               ← plan, tdd, verify, review, clarify, subagent-dev, + optional
 │   ├── rules/                ← workflow, testing, git, + conditional api/db/frontend/etc.
 │   ├── hooks/                ← settings.json (committed) + settings.local.json.example
+│   │   └── scripts/          ← the hook chain + gate.conf (the one stack-specific file)
+│   ├── githooks/             ← pre-push, post-merge/checkout schema sync, session trailer
+│   ├── docs/                 ← CODING_STANDARDS.md (imported by generated CLAUDE.md)
 │   ├── output-styles/        ← tdd.md (system-prompt TDD enforcement)
 │   └── ci/                   ← claude-test.yml, claude-review.yml for GH Actions
 └── scripts/install.sh        ← one-liner curl installer → puts skills in ~/.claude/
@@ -41,6 +44,7 @@ claude-init is a generator that turns any existing codebase into an AI-native on
 - **Model tiering**: Opus for architectural work, Sonnet for implementation + review, Haiku for research/exploration. Generic Opus-everywhere wastes tokens.
 - **Auto-triggered workflow**: `rules/workflow.md` makes Claude follow `clarify → plan → TDD → verify → review` automatically. Users don't type slash commands.
 - **Two-tier settings**: `settings.json` (committed deny + ask layer) vs `settings.local.json.example` (shows the shape for personal allows; gitignored real file). Mirrors how teams actually split safety defaults from personal ergonomics.
+- **A quality gate, not just a safety net**: the Stop hook runs the project's single check command once per turn and blocks until green, armed by Edit/Write and by shell edits (mtime), per session and per worktree. Every hook and git hook reads `gate.conf`, so no hook hardcodes a command or a subset of checks. Detail and the payload-pipe proof: `.claude/skills/claude-init/reference/harness.md`.
 - **Deterministic hooks, not LLM hooks**: shell-regex PreToolUse/PostToolUse catches the 5 things you absolutely must block (credentials, force-push, `rm -rf /`) and auto-formats on write. No LLM-in-the-loop for safety.
 - **Output style for TDD**: injects the RED-GREEN-REFACTOR rule into the system prompt, which is stronger than a rule file (Claude can't "forget" it).
 

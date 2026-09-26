@@ -130,6 +130,17 @@ Decision log for the weekly self-learning loop (`.github/workflows/self-learn.ym
 
 ### ⏳ Tracking (carried over)
 - 2.1.248's `experimental.cacheTtl` agent frontmatter field — still explicitly experimental per `/sub-agents` docs as of 2026-09-14; revisit once it ships out of `experimental.` naming/status.
+## Cycle: 2026-09-26 (manual, harness merge from two production repos)
+
+### ✅ Adopted: the Volty + Ragnarok harness
+- **Source:** two repos run daily with this setup: voltade/volty (`origin/main` dd891b7f2) and ragtag-ragnarok, which had already ported Volty's hooks and then fixed their blind spots.
+- **From Volty:** per-session Stop-gate marker with a 3-attempt cap and one dependency-reinstall retry; the pre-edit generated-file block; `post-merge`/`post-checkout` schema sync (never fatal, skipped in CI); the `prepare-commit-msg` `Claude-Session:` trailer and the push-and-watch discipline; CODING_STANDARDS.md read by `/code-review`; live-verify (every path, read the artifact, read the attempt); the three-tier CLAUDE.md from write-agent-docs; deslop; the user-invoked what-happened / wait-what.
+- **From Ragnarok (fixes Volty still lacks):** gate armed by shell edits via mtime (in bypass-permissions mode Claude edits with sed and heredocs, which an Edit|Write matcher never sees, so the gate was silently off); gate rooted at the payload `cwd` toplevel, not `CLAUDE_PROJECT_DIR` (worktree sessions were being gated on a sibling session's half-typed edits); environmental failures warn instead of block; the gate calls one auto-discovering command (a hardcoded pair of guards was missing nine); pre-push refuses a tree behind the default branch; SessionStart prunes orphaned markers.
+- **Permission lesson:** `Write(path)` rules match nothing; file rules are `Edit(path)`. The template had four inert `Write(...)` entries. `Bash(...)` rules prefix-match, so they are a floor, not a wall.
+- **Also fixed:** the installed copy in `~/.claude/skills` had drifted behind the repo (old `persistent-memory` field, missing DoD and description rules). `install.sh --local` now installs from a checkout and replaces each skill dir instead of copying over it; `/doctor` checks installed-vs-source drift.
+
+### ❌ Rejected: Volty's "backfills ride migrations" rule
+- **Reason:** a stack-specific deployment policy with a live counter-example (Ragnarok runs backfills by hand after the deploy, with the row count stated first). Not a default for every generated repo.
 
 ## Guardrails (summary — full text in .github/prompts/self-learn.md)
 

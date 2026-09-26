@@ -131,6 +131,10 @@ Auto-triggered by the workflow rule — Claude follows these automatically, scal
 | `/verify` | No completion claims without fresh evidence | Always |
 | `/subagent-dev` | Fresh subagent per task + two-stage review | Always |
 | `/finish` | Land work: verify → merge/PR/keep/discard | Always |
+| `/live-verify` | Reproduce first, then an adversarial live pass on every path that reaches the behavior | Always |
+| `/deslop`, `/write-agent-docs` | Keep prose, docs, CLAUDE.md and skills lean and literal | Always |
+| `/what-happened`, `/wait-what` | User-invoked: a 30-second session recap; "re-explain that plainly" | Always (zero context cost) |
+| `/push-and-watch` | Own a deploy from push to live evidence, with the rollback lever named | When a push deploys |
 | `/devils-advocate` | Stress-test a design before shipping | When complex project |
 
 Also generated: `docs/definition-of-done.md` — a standing, project-wide "is it ready?" checklist (correctness, quality, integration, docs) built from your actual stack. `/verify` and `/finish` use it as their final gate; per-task acceptance criteria answer "did we build the right thing?", the DoD answers "is it ready to land?".
@@ -160,6 +164,20 @@ Deterministic, command-based guardrails — minimal to avoid friction:
 **Team projects** (>1 contributor): Block `git push --force`, `npm publish`, `docker push`, `terraform destroy`. Deny reading `~/.ssh/`, `~/.aws/`, `~/.gnupg/`
 
 **Solo dev:** Minimal hooks only — no false positives on legitimate commands
+
+### Quality gate (the hook chain)
+
+Every generated repo gets a gate that runs the project's own check command once per turn and refuses to let Claude finish while it is red. One file, `.claude/scripts/gate.conf`, holds the stack-specific values; every hook reads it.
+
+- **Stop gate**: runs `CHECK_CMD` when this session changed source; exit 2 feeds failures back; 3 attempts, then it steps aside with a warning. Environment failures (database down) warn instead of block; a mid-install missing package gets one reinstall.
+- **Edits of every kind arm it**: Edit/Write via a PostToolUse hook, and shell edits (sed, heredocs, scripts) by file mtime, so bypass-permissions sessions are gated too.
+- **Per session, per tree**: markers are keyed on the session id and the gate runs in the session's own worktree.
+- **Git hooks** (`.githooks/`): `pre-push` refuses a tree behind the default branch and runs the gate; `post-merge`/`post-checkout` run your migrate command when migrations changed; `prepare-commit-msg` stamps a `Claude-Session:` trailer so you can tell which session wrote each commit in a push.
+- **Permission rules that match**: file rules are `Edit(path)` (`Write(path)` rules match nothing), and `--no-verify`, `--force-with-lease` and `git config core.hooksPath` are denied so the hooks cannot be skipped.
+
+`/doctor` proves the chain fires by piping simulated payloads into each hook, and checks for rules that match nothing, a gate that hardcodes a subset of checks, stale markers, and installed skills that drifted from their source repo.
+
+Also generated: `CODING_STANDARDS.md`, imported by CLAUDE.md, which `/code-review` reads as its standards (surgical changes, no speculative abstraction, tests seen failing, test the seam).
 
 ## Stack Detection
 

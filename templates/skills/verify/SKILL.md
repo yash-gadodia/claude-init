@@ -52,6 +52,8 @@ Skip any step = unverified claim.
 | "Build succeeds" | Build command with exit 0 | "Linter passed" |
 | "Bug is fixed" | Test reproducing the bug now passes | "Code changed" |
 | "Requirements met" | Line-by-line checklist against spec | "Tests pass" |
+| "It works" / "Bug is gone in the app" | The live-verify pass: every path that reaches the behavior probed on the running app, artifacts read back | "Tests pass", a 200 status |
+| "Deployed" | The push-and-watch chain: deploy watched to green, live URL curled with the change found | `git push` exit 0 |
 | "Linter clean" | Linter output showing 0 errors | Partial check |
 
 ## Red Flags — STOP

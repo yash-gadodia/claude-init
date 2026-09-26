@@ -119,19 +119,18 @@ Based on the analysis, generate these files in the target repo. Use the template
 If neither exists, generate config from scratch using the analysis — templates are helpful but not required.
 
 ### 2a. CLAUDE.md
-Generate at the repo root. Must include:
-- One-line project description
-- **Commands section**: Actual dev/test/build/lint commands found in package.json/Makefile/etc.
-- **Architecture section**: Actual framework, DB, auth, API patterns found
-- **Code style section**: Actual conventions found (or sensible defaults for the stack)
-- **Testing section**: Actual test framework, location, and run commands
-- **Git section**: Actual commit style from git log
-- **Patterns to follow**: Key patterns found in the codebase (import style, error handling, etc.)
-- **Workflow section**: Include these three rules — they prevent Claude's most common failure modes:
-  - "After 2 failed attempts at the same approach, stop and rethink"
-  - "Verify before claiming done — run tests/commands and show output"
-  - "Delegate verbose operations (test runs, log analysis) to subagents to preserve context"
-- **Do NOT section**: Stack-specific anti-patterns
+Generate at the repo root. Every always-loaded line either changes behavior or teaches the agent to skim, so place each piece of material in one of three tiers (the `write-agent-docs` template skill carries the full reasoning):
+
+1. **Bare, at the top, always needed**: one-line project description, tech stack, the commands (dev/test/build/lint and the single gate command from `gate.conf`), and `git config core.hooksPath .githooks` for new clones.
+2. **Inline under a heading that names the work**: e.g. `## Changing the schema or writing a migration`, `## Adding an API route`, `## Before pushing`. The heading is the relevance signal: an agent doing that work reads it, one doing other work skims past. Put architecture patterns, commit style, stack-specific anti-patterns, and these workflow rules under the narrowest heading that fits:
+   - "After 2 failed attempts at the same approach, stop and rethink"
+   - "Verify before claiming done: run the gate and show output; a behavior claim needs the live-verify pass"
+   - "Delegate verbose operations (test runs, log analysis) to subagents to preserve context"
+3. **Behind a pointer**: heavy playbooks live in skills (live-verify, push-and-watch, a database skill) and the CLAUDE.md section shrinks to one line naming the skill and when to read it. A guardrail that must survive a skipped skill read stays as one line in the section.
+
+Write rules at normal volume with their reason: no ALL-CAPS, no IMPORTANT/MUST markers, no `<important if>` wrappers (urgency makes a rule fire outside the case it was written for), and no blanket lines like "be concise" or "always ask".
+
+Also generate `CODING_STANDARDS.md` at the repo root from `templates/docs/CODING_STANDARDS.md` (fill `<CHECK_CMD>`; add any stack-specific rule found in a CONTRIBUTING guide) and import it from CLAUDE.md with `@CODING_STANDARDS.md` so `/code-review` reads it as its standards.
 
 Do NOT restate content Claude can derive by reading the codebase itself — full dependency/version lists already in package.json/Cargo.toml/etc., directory trees `ls` would show, or verbatim README paragraphs. Every line must save Claude a lookup or encode tribal knowledge it can't get elsewhere (Claude Code's own `/doctor` flags exactly this anti-pattern in checked-in CLAUDE.md files as of 2.1.206).
 
@@ -211,8 +210,13 @@ Only generate skills that add value beyond what Claude already does. A skill mus
 6. **subagent-dev/SKILL.md** — Subagent-driven development. Fresh subagent per task + two-stage review (spec compliance → code quality). Auto-triggered for plans with 3+ independent tasks.
 7. **finish/SKILL.md** — Land completed work. Verify tests, present options (merge/PR/keep/discard), execute with safety checks. Auto-triggered after implementation and review pass.
 
+8. **live-verify/SKILL.md** — Reproduce-first plus the adversarial live pass across every path that reaches a behavior. Fill in the project's real surfaces (UI routes, API, jobs, bots) and how to run the app as the production database role.
+9. **deslop/SKILL.md** (with `references/prose-tropes.md`) and **write-agent-docs/SKILL.md** — copy as-is; they keep future CLAUDE.md, skill and doc edits lean.
+10. **what-happened/SKILL.md** and **wait-what/SKILL.md** — user-invoked (`disable-model-invocation: true`), so they cost no context until typed. Copy as-is.
+
 **Conditionally generate:**
-8. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
+11. **push-and-watch/SKILL.md** — Only when a push deploys (a host watching the default branch, or a CI deploy job). Fill every `<PLACEHOLDER>`: the deploy trigger, how to watch the deploy (`gh run watch`, the host CLI), the live URL, and the rollback lever for code-only pushes (redeploy the previous build, or revert and push). Migrations always fix forward.
+12. **devils-advocate/SKILL.md** — Only for projects with complex architecture or multiple contributors. Overkill for simple apps.
 
 **Do NOT generate by default (Claude already does these well without a skill):**
 - `/fix` — Claude's default debugging is already "reproduce → locate → fix"
@@ -259,14 +263,17 @@ Use dynamic shell context where it helps — `` !`git diff --stat` `` in review/
 
 Split the settings into a committed file and a personal file. This mirrors how real teams actually use Claude Code: everyone shares the safety net, each dev adds their own approve-without-prompting shortcuts.
 
-**`.claude/settings.json` — committed, team-wide safety:**
+**`.claude/settings.json` — committed, team-wide safety and the quality gate.** Start from `templates/hooks/settings.json`, which already wires everything below. Read `reference/harness.md` before this step: it explains each piece, the install order, and the payload-pipe proof.
+
+- **The hook chain** (`templates/hooks/scripts/` into `.claude/scripts/`): pre-edit block for generated and append-only files, post-edit and post-bash (mtime) markers, session-start stamp, and the Stop gate that runs the project's single gate command once per turn and blocks until green. Customize only `gate.conf`: `CHECK_CMD` is the project's whole gate (`npm run check`, `make check`), never a hand-picked subset of checks.
+- **Git hooks** (`templates/githooks/` into `.githooks/`): pre-push (refuse when behind the default branch, then the gate), post-merge and post-checkout (run `MIGRATE_CMD` when migrations changed), prepare-commit-msg (the `Claude-Session:` trailer). Run `git config core.hooksPath .githooks` before writing settings.json, since settings deny that command.
 
 - **PreToolUse (Bash)**: Regex-block `git push --force`, `npm publish`, `docker push`, `terraform destroy`, `kubectl delete namespace`, `rm -rf /` / `rm -rf ~`. Use word-boundaries (`\b`) so `rm -rf ./dist` doesn't match.
 - **PreToolUse (Write|Edit)**: Hard-block writes to `.env*`, `*.pem`, `*.key`, `*.cert`, `*.p12`, `~/.ssh/`, `~/.aws/`, `~/.gnupg/` based on the basename (not full path — so `src/env.ts` stays allowed, only `.env` / `local.env` / `.env.production` match).
 - **permissions.ask (not deny)** for `.claude/settings.json` and `.claude/hooks/**` (both project and `~/.claude/`): prompts the user before Claude edits the safety layer, but doesn't hard-block. Hard-block would kill `/update` — `ask` gives the user control without the friction. This is slavaspitsyn's "hook self-protection" pattern softened for real-world UX.
 - **PostToolUse (Write|Edit)**: Auto-format the file that was just written (prettier for JS/TS/JSON/MD/CSS, ruff/black for Python, gofmt for Go, rustfmt for Rust). Non-blocking — `|| true` if the formatter isn't installed. This is Boris Cherny's #1 tip: tight feedback loops are the single biggest Claude Code quality lever.
 - **PreCompact**: Snapshot the branch name, `git status --short`, and last 10 commits into `.claude/checkpoints/checkpoint-<ts>.md` before compaction. Survives context loss.
-- **permissions.deny**: `~/.ssh/**`, `~/.aws/**`, `~/.gnupg/**`, `.env*`, and the four dangerous-bash patterns in duplicate (belt + suspenders — permission rules catch what hook regex might miss).
+- **permissions.deny**: `~/.ssh/**`, `~/.aws/**`, `~/.gnupg/**`, `.env*`, the dangerous-bash patterns in duplicate (belt + suspenders — permission rules catch what hook regex might miss), and `git push --force-with-lease`, `--no-verify` on commit and push, `git commit -n`, and `git config core.hooksPath` so the git hooks cannot be skipped. File rules are always `Edit(path)`: Edit rules cover every file-writing tool, and `Write(path)` rules match nothing.
 - **MCP deny patterns** (only if `.mcp.json` or `mcp_servers` detected): add regex entries like `mcp__.*__write.*`, `mcp__.*__delete.*`, `mcp__.*__create.*` so MCP side effects need explicit approval. Remember MCP matchers use JS regex — `mcp__memory` alone matches nothing; you need `mcp__memory__.*`.
 
 **`.claude/settings.local.json.example` — committed, acts as onboarding, NOT loaded by Claude Code:**
@@ -319,6 +326,7 @@ Ensure the following are gitignored:
 - `.claude/settings.local.json` (personal overrides)
 - `.claude/agent-memory-local/` (per-session memory)
 - `.claude/checkpoints/` (PreCompact hook drops checkpoint files here — regenerable, no value in git)
+- `.claude/.cache/` (per-session gate markers and mtime stamps)
 
 Do NOT gitignore `.claude/settings.local.json.example` — that's the onboarding artifact, must be committed.
 
@@ -329,9 +337,10 @@ After generation:
 2. Show the CLAUDE.md and ARCHITECTURE.md to the user for review
 3. List all agents, skills, rules, hooks, and output styles created
 4. Report test suite status (framework installed, number of tests, all passing?)
-5. Tell the user about the TDD output style and how to activate it (`/config` → Output style → TDD)
-6. If a `settings.local.json.example` was generated, tell them to `cp .claude/settings.local.json.example .claude/settings.local.json` to get personal allow-lists on day one
-7. Suggest next steps (e.g., "Run `/onboard` to get oriented", "Run `/doctor` to validate the config", "Customize CLAUDE.md further")
+5. Prove the hooks fire by piping simulated payloads into each script (`reference/harness.md`, "Proving it works") and show the exit codes. Reading a hook is not evidence it runs.
+6. Tell the user about the TDD output style and how to activate it (`/config` → Output style → TDD)
+7. If a `settings.local.json.example` was generated, tell them to `cp .claude/settings.local.json.example .claude/settings.local.json` to get personal allow-lists on day one
+8. Suggest next steps (e.g., "Run `/onboard` to get oriented", "Run `/doctor` to validate the config", "Customize CLAUDE.md further")
 
 ## Rules
 

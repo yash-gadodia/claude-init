@@ -67,6 +67,17 @@ Read `.claude/settings.json`:
 - [ ] PostToolUse formatters use `|| true` or `exit 0` so a missing tool doesn't block writes
 - [ ] Hook self-protection exists: `.claude/settings.json`, `.claude/hooks/**`, `.claude/agents/**`, `.claude/skills/**/SKILL.md` should be blocked from Edit/Write
 
+### 5a. Harness audit (does the safety net actually catch anything?)
+Config fails open: a rule that matches nothing, or a hook that never fires, raises no error. Prove each item; never pass it by reading the file.
+- [ ] **Permission rules match something.** Any `Write(path)` rule is an error: it matches nothing; the fix is `Edit(path)`. `Bash(...)` rules prefix-match, so note they are a floor, not a wall.
+- [ ] **Hooks see how edits actually happen.** If the gate is armed only from an `Edit|Write` matcher, bash edits (sed, heredocs, scripts, as used in bypass-permissions mode) never arm it. Expect a `PostToolUse` `Bash` hook that detects changes by mtime.
+- [ ] **Hooks fire.** From the repo root, pipe a simulated payload into each hook script and record the exit code: e.g. `printf '{"session_id":"doctor","cwd":"%s","tool_name":"Edit","tool_input":{"file_path":"%s/package-lock.json"}}' "$PWD" "$PWD" | .claude/scripts/pre-edit-hook.sh; echo $?` must print 2; a post-edit payload for a source file must create `.claude/.cache/full-check-needed.doctor`; the Stop hook with that marker must run the gate. Clean up the `doctor` files after.
+- [ ] **The gate has not drifted.** The Stop hook and `.githooks/pre-push` call one project command (`CHECK_CMD` in `.claude/scripts/gate.conf`, or the project's `check` script), not a hardcoded subset of checks. Compare against the project's check runner: a check that exists there but not in the gate is an error.
+- [ ] **Gate roots at the session's tree.** A Stop hook that `cd`s to `$CLAUDE_PROJECT_DIR` gates worktree sessions on the main checkout; it should resolve the payload's `cwd` git toplevel.
+- [ ] **Git hooks are live.** `git config core.hooksPath` equals `.githooks` (or wherever the repo keeps them) and each file there is executable. A committed hook with no `core.hooksPath` is a file, not a gate.
+- [ ] **No stale state.** Files in `.claude/.cache/` older than a day (orphaned gate markers from sessions that ended red), skills or agents that reference paths that no longer exist, rules pointing at moved files.
+- [ ] **Installed copies match their source.** For skills installed from a source repo (e.g. `~/.claude/skills/claude-init` from the claude-init repo), `diff -r` the installed copy against the source; any difference means the running skill is not the committed one.
+
 ### 5b. Output Styles (if present)
 For each `.claude/output-styles/*.md`:
 - [ ] Valid YAML frontmatter with `name` and `description`

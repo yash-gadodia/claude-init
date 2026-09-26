@@ -49,6 +49,12 @@ If neither exists, skip this step (note it in the report so the user knows templ
 | Skill `description:` written in first/second person ("I …", "You …") | `.claude/skills/*/SKILL.md` | Rewrite in third person. |
 | `SKILL.md` body over 500 lines | `.claude/skills/*/SKILL.md` | Split long examples/scripts into sibling reference files. |
 | Missing `settings.local.json.example` while `settings.json` exists | `.claude/` | Generate the example so contributors can bootstrap personal overrides. |
+| `Write(path)` rules in `permissions` | `.claude/settings.json` | They match nothing. Rewrite each as `Edit(path)`. |
+| No Stop-hook gate, or a gate that hardcodes a subset of checks | `.claude/settings.json`, `.claude/scripts/` | Install the hook chain from `templates/hooks/scripts/` and point `gate.conf`'s `CHECK_CMD` at the project's whole check command (see the claude-init skill's `reference/harness.md`). |
+| Gate armed only by an `Edit\|Write` hook | `.claude/settings.json` | Add the `PostToolUse` `Bash` mtime hook and `SessionStart` stamp, or bash edits never run the gate. |
+| Stop hook rooted at `$CLAUDE_PROJECT_DIR` | `.claude/scripts/stop-hook.sh` | Root it at the payload `cwd`'s git toplevel so worktree sessions gate their own tree. |
+| No `.githooks/` (pre-push gate, post-merge schema sync, session trailer), or `core.hooksPath` unset | repo root | Offer the templates from `templates/githooks/`; set `git config core.hooksPath .githooks` before adding its deny rule. |
+| Missing `CODING_STANDARDS.md`, `live-verify`, `push-and-watch` (when pushes deploy), `what-happened`, `wait-what` | repo root, `.claude/skills/` | Offer them from the templates, filled for this project. |
 
 This list grows as templates evolve — treat it as "known fixes since generation", not an exhaustive lint. For a fuller config audit, point the user at `/doctor`.
 
