@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# A push is only as good as the tree it was gated on. Refuse when the default
+# branch has commits you have not pulled (you gated code that is not what will
+# run), then run the project gate.
+#
+# Enable once per checkout: git config core.hooksPath .githooks
+set -e
+. "$(dirname "$0")/_conf.sh"
+branch="${DEFAULT_BRANCH:-main}"
+
+if git remote get-url origin >/dev/null 2>&1; then
+  git fetch -q origin "$branch" 2>/dev/null || true
+  if git rev-parse -q --verify "origin/$branch" >/dev/null \
+    && ! git merge-base --is-ancestor "origin/$branch" HEAD; then
+    echo "pre-push: origin/$branch has commits you have not pulled. Run:"
+    echo "  git pull --rebase origin $branch"
+    echo "then run the gate on the rebased tree and push again."
+    exit 1
+  fi
+fi
+
+if [ -n "${CHECK_CMD:-}" ]; then
+  echo "pre-push: $CHECK_CMD"
+  cd "$root/${CHECK_DIR:-.}"
+  sh -c "$CHECK_CMD"
+fi
+echo "pre-push: green"

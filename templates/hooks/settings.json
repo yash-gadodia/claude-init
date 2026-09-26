@@ -1,7 +1,16 @@
 {
-  "//": "Team-wide settings, committed to git. Personal overrides go in .claude/settings.local.json (gitignored). See .claude/settings.local.json.example for the shape.",
-
+  "//": "Team-wide settings, committed to git. Personal overrides go in .claude/settings.local.json (gitignored). File rules are Edit(path): Edit rules cover every file-writing tool, while Write(path) rules match nothing. Bash rules prefix-match, so they are a floor, not a wall.",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/session-start-hook.sh\""
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",
@@ -15,26 +24,53 @@
         ]
       },
       {
-        "matcher": "Write|Edit",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
             "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | grep -oE '\"file_path\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' | head -1 | sed -E 's/.*\"([^\"]+)\"$/\\1/'); BASE=$(basename \"$FILE\" 2>/dev/null); if echo \"$BASE\" | grep -qE '^\\.env$|^\\.env\\.[^.]+$|\\.env$|\\.pem$|\\.key$|\\.cert$|\\.p12$|\\.pfx$'; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Blocked: writing to a credential or secret file ('\"$FILE\"'). If this is not a secret (e.g. .env.example), ask the user to confirm.\"}}'; elif echo \"$FILE\" | grep -qE '/\\.ssh/|/\\.aws/|/\\.gnupg/'; then echo '{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"Blocked: writing inside a credentials directory ('\"$FILE\"').\"}}'; fi",
             "timeout": 5000,
             "statusMessage": "Checking write target"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/pre-edit-hook.sh\""
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
             "command": "INPUT=$(cat); FILE=$(echo \"$INPUT\" | grep -oE '\"file_path\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' | head -1 | sed -E 's/.*\"([^\"]+)\"$/\\1/'); if [ -z \"$FILE\" ] || [ ! -f \"$FILE\" ]; then exit 0; fi; case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.md|*.css|*.html) command -v prettier >/dev/null 2>&1 && prettier --write --log-level=silent \"$FILE\" 2>/dev/null || true ;; *.py) command -v ruff >/dev/null 2>&1 && ruff format \"$FILE\" 2>/dev/null || { command -v black >/dev/null 2>&1 && black -q \"$FILE\" 2>/dev/null; } || true ;; *.go) command -v gofmt >/dev/null 2>&1 && gofmt -w \"$FILE\" 2>/dev/null || true ;; *.rs) command -v rustfmt >/dev/null 2>&1 && rustfmt --quiet \"$FILE\" 2>/dev/null || true ;; esac; exit 0",
             "timeout": 10000,
             "statusMessage": "Auto-format"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/post-edit-hook.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/post-bash-hook.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/scripts/stop-hook.sh\""
           }
         ]
       }
@@ -52,11 +88,15 @@
       }
     ]
   },
-
   "permissions": {
     "deny": [
       "Bash(git push --force*)",
       "Bash(git push -f *)",
+      "Bash(git push --force-with-lease*)",
+      "Bash(git push --no-verify*)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git config core.hooksPath*)",
       "Bash(npm publish*)",
       "Bash(docker push*)",
       "Bash(terraform destroy*)",
@@ -73,18 +113,16 @@
       "Edit(**/.env)",
       "Edit(**/.env.local)",
       "Edit(**/.env.production)",
-      "Write(.env)",
-      "Write(**/.env)",
-      "Write(**/.env.local)",
-      "Write(**/.env.production)"
+      "Edit(**/*.pem)",
+      "Edit(**/*.key)"
     ],
     "ask": [
       "Edit(.claude/settings.json)",
       "Edit(.claude/hooks/**)",
-      "Write(.claude/settings.json)",
-      "Write(.claude/hooks/**)",
       "Edit(~/.claude/settings.json)",
-      "Edit(~/.claude/hooks/**)"
+      "Edit(~/.claude/hooks/**)",
+      "Edit(.claude/scripts/**)",
+      "Edit(.githooks/**)"
     ]
   }
 }

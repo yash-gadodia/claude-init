@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+# A commit made from a Claude Code session gets a `Claude-Session: <name> (<id>)`
+# trailer. Every commit carries the same human author, so without it nobody can
+# tell which session owns a commit riding along in a push, or whom to ask.
+[ -n "${CLAUDE_CODE_SESSION_ID:-}" ] || exit 0
+
+# A rebase or cherry-pick replays commits other sessions wrote: leave them alone.
+for state in rebase-merge rebase-apply CHERRY_PICK_HEAD; do
+  [ -e "$(git rev-parse --git-path "$state")" ] && exit 0
+done
+
+name=""
+registry="$HOME/.claude/sessions/${CLAUDE_PID:-none}.json"
+[ -r "$registry" ] && name=$(sed -n 's/.*"name": *"\([^"]*\)".*/\1/p' "$registry" | head -n 1)
+
+git interpret-trailers --in-place --if-exists doNothing \
+  --trailer "Claude-Session: ${name:-unnamed} ($CLAUDE_CODE_SESSION_ID)" "$1"

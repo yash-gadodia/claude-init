@@ -15,10 +15,15 @@ if ! command -v git &>/dev/null; then
   exit 1
 fi
 
-# Clone to temp dir
+# --local installs from the checkout this script lives in, so a local edit can be
+# tested before it is pushed and the installed copy never lags the repo.
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
-git clone --depth 1 "$REPO_URL" "$TMPDIR/claude-init" 2>/dev/null
+if [ "${1:-}" = "--local" ]; then
+  ln -s "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" "$TMPDIR/claude-init"
+else
+  git clone --depth 1 "$REPO_URL" "$TMPDIR/claude-init" 2>/dev/null
+fi
 
 # Create skills directory if needed
 mkdir -p "$INSTALL_DIR"
@@ -26,6 +31,7 @@ mkdir -p "$INSTALL_DIR"
 # Copy core skills (the ones that run FROM claude-init, not templates)
 for skill in claude-init onboard update doctor; do
   if [ -d "$TMPDIR/claude-init/.claude/skills/$skill" ]; then
+    rm -rf "${INSTALL_DIR:?}/$skill"
     cp -r "$TMPDIR/claude-init/.claude/skills/$skill" "$INSTALL_DIR/"
     echo "  Installed /$skill"
   fi
@@ -35,7 +41,7 @@ done
 TEMPLATES_DIR="$HOME/.claude/claude-init-templates"
 if [ -d "$TMPDIR/claude-init/templates" ]; then
   rm -rf "$TEMPLATES_DIR"
-  cp -r "$TMPDIR/claude-init/templates" "$TEMPLATES_DIR"
+  cp -R "$TMPDIR/claude-init/templates/" "$TEMPLATES_DIR"
   echo "  Installed templates to $TEMPLATES_DIR"
 fi
 

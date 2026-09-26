@@ -278,6 +278,84 @@ test_no_conflict_markers() {
   [ "$hit" -eq 0 ] && ok "no conflict markers in tracked files"
 }
 
+test_harness_scripts() {
+  section "harness: hook chain + git hook templates"
+  local d="templates/hooks/scripts" g="templates/githooks" f
+  have_file "$d/gate.conf"
+  for f in _lib.sh pre-edit-hook.sh post-edit-hook.sh post-bash-hook.sh session-start-hook.sh stop-hook.sh; do
+    is_executable "$d/$f"
+    if bash -n "$d/$f" 2>/dev/null; then ok "bash -n: $d/$f"; else no "syntax error: $d/$f"; fi
+  done
+  for f in _conf.sh _sync-db.sh pre-push post-merge post-checkout prepare-commit-msg; do
+    is_executable "$g/$f"
+    if sh -n "$g/$f" 2>/dev/null; then ok "sh -n: $g/$f"; else no "syntax error: $g/$f"; fi
+  done
+  contains "$d/_lib.sh" 'rev-parse --show-toplevel' "gate roots at the payload cwd's toplevel"
+  contains "$d/stop-hook.sh" 'CHECK_CMD' "stop gate runs the single CHECK_CMD"
+  contains "$d/post-bash-hook.sh" '-newer' "bash edits are detected by mtime"
+  contains "$g/pre-push" 'merge-base --is-ancestor' "pre-push refuses a tree behind the default branch"
+  contains "$g/_sync-db.sh" 'CI' "schema sync skips in CI"
+  local s="templates/hooks/settings.json"
+  absent   "$s" '"Write\(' "no Write() permission rules (they match nothing)"
+  contains "$s" 'post-bash-hook.sh' "settings wire the Bash mtime hook"
+  contains "$s" 'stop-hook.sh' "settings wire the Stop gate"
+  contains "$s" 'session-start-hook.sh' "settings wire SessionStart"
+  contains "$s" 'git commit --no-verify' "settings deny --no-verify commits"
+  contains "$s" 'git config core.hooksPath' "settings deny unsetting the git hooks"
+  contains "$s" 'force-with-lease' "settings deny force-with-lease"
+  for f in live-verify push-and-watch deslop write-agent-docs what-happened wait-what; do
+    have_file "templates/skills/$f/SKILL.md"
+  done
+  contains "templates/skills/what-happened/SKILL.md" "disable-model-invocation: true" "what-happened is user-invoked"
+  contains "templates/skills/wait-what/SKILL.md" "disable-model-invocation: true" "wait-what is user-invoked"
+  have_file "templates/docs/CODING_STANDARDS.md"
+  have_file ".claude/skills/claude-init/reference/harness.md"
+  contains ".claude/skills/claude-init/SKILL.md" "reference/harness.md" "generator links its harness reference"
+}
+
+test_harness_behavior() {
+  section "harness: hooks fire on simulated payloads"
+  command -v git >/dev/null 2>&1 || { skip "harness behavior" "no git"; return; }
+  if ! command -v jq >/dev/null 2>&1 && ! command -v python3 >/dev/null 2>&1; then
+    skip "harness behavior" "no jq/python3"; return
+  fi
+  local t; t=$(mktemp -d); trap 'rm -rf "$t"' RETURN
+  mkdir -p "$t/.claude/scripts" "$t/src" "$t/.claude/.cache"
+  cp templates/hooks/scripts/* "$t/.claude/scripts/"
+  sed -i.bak 's|^CHECK_CMD=.*|CHECK_CMD="test ! -e FAIL"|; s|^ENV_FAILURE_REGEX=.*|ENV_FAILURE_REGEX=""|' "$t/.claude/scripts/gate.conf"
+  git -C "$t" init -q
+  echo 'export const a = 1' > "$t/src/a.ts"
+  local S="$t/.claude/scripts" c="$t/.claude/.cache" rc
+  pl() { printf '{"session_id":"t","cwd":"%s","tool_name":"%s","tool_input":{"file_path":"%s"}}' "$t" "$1" "$2"; }
+  export CLAUDE_PROJECT_DIR="$t"
+
+  pl Edit "$t/package-lock.json" | "$S/pre-edit-hook.sh" 2>/dev/null; rc=$?
+  [ "$rc" -eq 2 ] && ok "pre-edit blocks a lockfile edit (exit 2)" || no "pre-edit lockfile exit $rc, want 2"
+  pl Edit "$t/src/a.ts" | "$S/pre-edit-hook.sh" 2>/dev/null; rc=$?
+  [ "$rc" -eq 0 ] && ok "pre-edit allows a source edit" || no "pre-edit source exit $rc, want 0"
+
+  pl Write "$t/README.md" | "$S/post-edit-hook.sh"
+  [ ! -f "$c/full-check-needed.t" ] && ok "post-edit ignores a non-source file" || no "post-edit armed on README"
+  pl Write "$t/src/a.ts" | "$S/post-edit-hook.sh"
+  [ -f "$c/full-check-needed.t" ] && ok "post-edit arms the marker" || no "post-edit did not arm"
+  rm -f "$c/full-check-needed.t"
+
+  pl "" "" | "$S/session-start-hook.sh"
+  sleep 1; echo 'export const b = 2' >> "$t/src/a.ts"
+  pl Bash "" | "$S/post-bash-hook.sh"
+  [ -f "$c/full-check-needed.t" ] && ok "post-bash arms the marker after a shell edit" || no "post-bash did not arm"
+
+  touch "$t/FAIL"
+  pl "" "" | "$S/stop-hook.sh" 2>/dev/null; rc=$?
+  [ "$rc" -eq 2 ] && ok "stop gate blocks on a failing check (exit 2)" || no "stop failing exit $rc, want 2"
+  rm -f "$t/FAIL"
+  pl "" "" | "$S/stop-hook.sh" 2>/dev/null; rc=$?
+  [ "$rc" -eq 0 ] && [ ! -f "$c/full-check-needed.t" ] && ok "stop gate passes and clears the marker" || no "stop passing exit $rc or marker left"
+  pl "" "" | "$S/stop-hook.sh" 2>/dev/null; rc=$?
+  [ "$rc" -eq 0 ] && ok "stop gate is a no-op when nothing changed" || no "stop unarmed exit $rc"
+  unset CLAUDE_PROJECT_DIR
+}
+
 # ---- run --------------------------------------------------------------------
 printf "${D}claude-init self-tests — %s${Z}\n" "$ROOT"
 test_repo_structure
@@ -296,6 +374,8 @@ test_tdd_guard_optional
 test_update_template_sync
 test_line_limits
 test_installer
+test_harness_scripts
+test_harness_behavior
 test_no_conflict_markers
 
 TOTAL=$((PASSED + FAILS))

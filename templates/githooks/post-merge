@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# After a pull or merge: ORIG_HEAD is where you were before it.
+exec "$(dirname "$0")/_sync-db.sh" "$(git rev-parse --verify --quiet ORIG_HEAD)" HEAD

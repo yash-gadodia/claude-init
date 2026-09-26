@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# After a branch switch ($3 = 1); file checkouts ($3 = 0) are ignored.
+[ "$3" = "1" ] || exit 0
+exec "$(dirname "$0")/_sync-db.sh" "$1" "$2"
